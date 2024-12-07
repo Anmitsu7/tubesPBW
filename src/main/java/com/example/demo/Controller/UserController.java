@@ -3,10 +3,13 @@ package com.example.demo.Controller;
 import com.example.demo.User.User;
 import com.example.demo.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ModelAttribute;
 // UserController.java
 import org.slf4j.Logger;
@@ -26,20 +29,18 @@ public class UserController {
         return "signup";
     }
 
-    @PostMapping("/signup")
-    public String saveUser(@ModelAttribute User user, Model model) {
+    @PostMapping("/signup") // Changed from /api/users/signup to /signup
+    public ResponseEntity<?> signupUser(@RequestBody User user) {
         try {
-            userService.saveUser(user);
-            logger.info("User registered successfully: {}", user.getUsername());
-            return "redirect:/login?signupSuccess";
-        } catch (IllegalArgumentException e) {
-            logger.error("Error saving user: {}", e.getMessage());
-            model.addAttribute("errorMessage", e.getMessage());
-            return "signup";
+            // Ensure role is set to PELANGGAN for new user registrations
+            user.setRole(User.UserRole.PELANGGAN);
+
+            User savedUser = userService.saveUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (Exception e) {
-            logger.error("Unexpected error during registration: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Registration failed: " + e.getMessage());
-            return "signup";
+            logger.error("Error saving user: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Terjadi kesalahan saat menyimpan pengguna baru: " + e.getMessage());
         }
     }
 }
