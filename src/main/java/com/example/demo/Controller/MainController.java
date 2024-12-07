@@ -2,6 +2,11 @@ package com.example.demo.Controller;
 
 import com.example.demo.User.User;
 import com.example.demo.User.UserRepository;
+
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +16,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.demo.DTO.LoginRequest;
 
 
@@ -55,5 +62,23 @@ public class MainController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Username atau password salah");
         }
+    }
+
+    @GetMapping("/home")
+    public String home(Model model, Principal principal) {
+        if (principal != null) {
+            model.addAttribute("username", principal.getName());
+        }
+        return "HomepageAfterLogin";
+    }
+    
+    @GetMapping("/user-data")
+    @ResponseBody
+    public Map<String, String> getUserData(Principal principal) {
+        Map<String, String> userData = new HashMap<>();
+        if (principal != null) {
+            userData.put("username", principal.getName());
+        }
+        return userData;
     }
 }

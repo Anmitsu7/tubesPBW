@@ -1,4 +1,4 @@
-package com.example.demo.Config;
+package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,13 +19,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Nonaktifkan CSRF untuk testing
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/login", "/signup").permitAll() // Izinkan akses tanpa autentikasi
-                .anyRequest().authenticated() // Semua request lain memerlukan autentikasi
-            )
-            .formLogin(form -> form.disable()) // Nonaktifkan form login bawaan
-            .httpBasic(basic -> basic.disable()); // Nonaktifkan HTTP Basic
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/**").permitAll() // Mengizinkan semua path
+                )
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable());
 
         return http.build();
     }
