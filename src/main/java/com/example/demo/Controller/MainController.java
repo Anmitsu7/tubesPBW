@@ -46,6 +46,16 @@ public class MainController {
         return "login";
     }
 
+    @GetMapping("/explore")
+    public String explore(Model model) {
+        return "explore";
+    }
+
+    @GetMapping("/profile")
+    public String profile(Model model) {
+        return "profile";
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         String username = loginRequest.getUsername();
@@ -64,7 +74,7 @@ public class MainController {
         }
     }
 
-    @GetMapping("/home")
+    @GetMapping("/homepageafterlogin")
     public String home(Model model, Principal principal) {
         if (principal != null) {
             model.addAttribute("username", principal.getName());
@@ -81,4 +91,5 @@ public class MainController {
         }
         return userData;
     }
+    
 }

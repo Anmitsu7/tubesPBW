@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <link rel="stylesheet" href="css/explore.css">
+    <script>
+        async function searchProducts() {
+            const judul = document.getElementById("judul").value;
+            const tahunMin = document.getElementById("tahunMin").value;
+            const tahunMax = document.getElementById("tahunMax").value;
+            const stokMin = document.getElementById("stokMin").value;
+
+            const response = await fetch(`/api/products/search?judul=${judul}&tahunMin=${tahunMin}&tahunMax=${tahunMax}&stokMin=${stokMin}`);
+            const products = await response.json();
+
+            const tableBody = document.getElementById("results");
+            tableBody.innerHTML = "";
+
+            products.forEach(product => {
+                const row = `<tr>
+                    <td>${product.id}</td>
+                    <td>${product.judul}</td>
+                    <td>${product.tahunRilis}</td>
+                    <td>${product.stok}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+    </script>
+</head>
+<body class="main-container">
+    <header class="header">
+        <h1>Product Search</h1>
+    </header>
+
+    <section class="search-container">
+        <div class="input-group">
+            <label for="judul">Judul:</label>
+            <input type="text" id="judul" name="judul">
+        </div>
+        <div class="input-group">
+            <label for="tahunMin">Tahun Rilis Min:</label>
+            <input type="number" id="tahunMin" name="tahunMin">
+        </div>
+        <div class="input-group">
+            <label for="tahunMax">Tahun Rilis Max:</label>
+            <input type="number" id="tahunMax" name="tahunMax">
+        </div>
+        <div class="input-group">
+            <label for="stokMin">Stok Min:</label>
+            <input type="number" id="stokMin" name="stokMin">
+        </div>
+        <button class="search-button" onclick="searchProducts()">Search</button>
+    </section>
+
+    <section class="results-container">
+        <h2>Results</h2>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Judul</th>
+                    <th>Tahun Rilis</th>
+                    <th>Stok</th>
+                </tr>
+            </thead>
+            <tbody id="results"></tbody>
+        </table>
+    </section>
+</body>
+</html>
