@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Film Rental</title>
+    <link rel="stylesheet" href="css/admin/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <nav>
+                <a href="/admin/dashboard" class="active">Dashboard</a>
+                <a href="/admin/films">Kelola Film</a>
+                <a href="/admin/genres">Kelola Genre</a>
+                <a href="/admin/actors">Kelola Aktor</a>
+                <a href="/admin/reports">Laporan</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Dashboard</h1>
+                <p>Selamat datang, Admin</p>
+            </header>
+
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h3>Total Film</h3>
+                    <p>150</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Sedang Disewa</h3>
+                    <p>45</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Penyewaan Bulan Ini</h3>
+                    <p>234</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Genre</h3>
+                    <p>12</p>
+                </div>
+            </div>
+
+            <div class="recent-rentals">
+                <h2>Penyewaan Terbaru</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Pelanggan</th>
+                            <th>Film</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2024-02-09</td>
+                            <td>John Doe</td>
+                            <td>Inception</td>
+                            <td>Disewa</td>
+                        </tr>
+                        <!-- More rows... -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -19,13 +19,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/**").permitAll() // Mengizinkan semua path
-                )
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable());
-
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/customer/**").hasRole("PELANGGAN")
+                .requestMatchers("/public/**").permitAll()
+                .anyRequest().authenticated()
+            );
         return http.build();
-    }
+}
 }
