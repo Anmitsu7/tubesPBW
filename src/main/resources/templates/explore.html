@@ -3,71 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FILM SEARCH</title>
-    <link rel="stylesheet" href="css/explore.css">
-    <script>
-        async function searchProducts() {
-            const judul = document.getElementById("judul").value;
-            const tahunMin = document.getElementById("tahunMin").value;
-            const tahunMax = document.getElementById("tahunMax").value;
-            const stokMin = document.getElementById("stokMin").value;
+    <title>Explore Films</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+  /* Global Styles */
+/* Global Styles */
+/* Global Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #0a1128;
+    color: #ffffff;
+    overflow-x: hidden;
+}
 
-            const response = await fetch(`/api/products/search?judul=${judul}&tahunMin=${tahunMin}&tahunMax=${tahunMax}&stokMin=${stokMin}`);
-            const products = await response.json();
+/* Header */
+.explore-header {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #1d3557, #457b9d);
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    text-transform: uppercase;
+}
 
-            const tableBody = document.getElementById("results");
-            tableBody.innerHTML = "";
+.explore-header h1 {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
 
-            products.forEach(product => {
-                const row = `<tr>
-                    <td>${product.id}</td>
-                    <td>${product.judul}</td>
-                    <td>${product.tahunRilis}</td>
-                    <td>${product.stok}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
-        }
-    </script>
+.explore-header p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* Search Bar Section */
+.filter-section {
+    padding: 30px 20px;
+    text-align: center;
+    background-color: #14213d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-bar-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+}
+
+#search-bar {
+    width: 60%;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border: 2px solid #457b9d;
+    border-radius: 5px;
+    background-color: #1d3557;
+    color: #ffffff;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+#search-bar::placeholder {
+    color: #b3b3b3;
+    font-style: italic;
+}
+
+#search-bar:focus {
+    border-color: #a8dadc;
+    box-shadow: 0 0 10px rgba(168, 218, 220, 0.8);
+}
+
+.btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+    color: #ffffff;
+    background-color: #457b9d;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+    background-color: #a8dadc;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(168, 218, 220, 0.6);
+}
+
+/* Film Section */
+.film-section {
+    padding: 40px 20px;
+    background-color: #0a1128;
+}
+
+.film-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.film-card {
+    background: #14213d;
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: center;
+    width: 250px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.film-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+}
+
+.film-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+.film-card h3 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+    color: #ffffff;
+}
+
+.film-card p {
+    font-size: 0.9rem;
+    color: #b3b3b3;
+    margin: 5px 0;
+}
+
+.film-card .btn {
+    margin: 15px 0;
+    background-color: #457b9d;
+    box-shadow: 0 5px 10px rgba(168, 218, 220, 0.5);
+}
+
+.film-card .btn:hover {
+    background-color: #a8dadc;
+    transform: translateY(-3px);
+}
+
+/* Footer */
+.explore-footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #14213d;
+    color: #b3b3b3;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+
+
+    </style>
 </head>
-<body class="main-container">
-    <header class="header">
-        <h1>Product Search</h1>
+<body>
+    <header class="explore-header">
+        <h1>Explore Films</h1>
+        <p>Search your favorite movies by genre, actor, or title with one click.</p>
     </header>
 
-    <section class="search-container">
-        <div class="input-group">
-            <label for="judul">Judul:</label>
-            <input type="text" id="judul" name="judul">
-        </div>
-        <div class="input-group">
-            <label for="tahunMin">Tahun Rilis Min:</label>
-            <input type="number" id="tahunMin" name="tahunMin">
-        </div>
-        <div class="input-group">
-            <label for="tahunMax">Tahun Rilis Max:</label>
-            <input type="number" id="tahunMax" name="tahunMax">
-        </div>
-        <div class="input-group">
-            <label for="stokMin">Stok Min:</label>
-            <input type="number" id="stokMin" name="stokMin">
-        </div>
-        <button class="search-button" onclick="searchProducts()">Search</button>
+    <section class="filter-section">
+        <form id="search-form">
+            <div class="search-bar-container">
+                <input 
+                    type="text" 
+                    id="search-bar" 
+                    name="search" 
+                    placeholder="Search by genre, actor, or title..." 
+                    autocomplete="off">
+                <button type="submit" class="btn">Search</button>
+            </div>
+        </form>
     </section>
 
-    <section class="results-container">
-        <h2>Results</h2>
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Judul</th>
-                    <th>Tahun Rilis</th>
-                    <th>Stok</th>
-                </tr>
-            </thead>
-            <tbody id="results"></tbody>
-        </table>
+    <section class="film-section">
+        <div class="film-container">
+            <!-- Example Film Card -->
+            <div class="film-card">
+                <img src="placeholder.jpg" alt="Film Cover">
+                <h3>The Last Mission</h3>
+                <p><strong>Genre:</strong> Action</p>
+                <p><strong>Year:</strong> 2023</p>
+                <button class="btn">Details</button>
+            </div>
+
+            <div class="film-card">
+                <img src="placeholder.jpg" alt="Film Cover">
+                <h3>Love in Jakarta</h3>
+                <p><strong>Genre:</strong> Romance</p>
+                <p><strong>Year:</strong> 2023</p>
+                <button class="btn">Details</button>
+            </div>
+            <!-- More Film Cards -->
+        </div>
     </section>
+
+    <footer class="explore-footer">
+        <p>&copy; 2024 Rental Film. All rights reserved.</p>
+    </footer>
 </body>
 </html>
