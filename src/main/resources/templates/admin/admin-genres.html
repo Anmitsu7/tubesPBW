@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Genre - Admin</title>
+    <link rel="stylesheet" href="css/admin/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <nav>
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/admin/films">Kelola Film</a>
+                <a href="/admin/genres" class="active">Kelola Genre</a>
+                <a href="/admin/actors">Kelola Aktor</a>
+                <a href="/admin/reports">Laporan</a>
+                <a href="/logout">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Kelola Genre</h1>
+                <button class="add-button" onclick="document.getElementById('addGenreForm').style.display='block'">
+                    Tambah Genre Baru
+                </button>
+            </header>
+
+            <div class="form-container" id="addGenreForm" style="display: none;">
+                <h2>Tambah Genre Baru</h2>
+                <form action="/admin/genres/add" method="POST">
+                    <div class="form-group">
+                        <label for="nama">Nama Genre</label>
+                        <input type="text" id="nama" name="nama" required>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit">Simpan</button>
+                        <button type="button" onclick="document.getElementById('addGenreForm').style.display='none'">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Genre</th>
+                            <th>Jumlah Film</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Action</td>
+                            <td>25</td>
+                            <td>
+                                <button class="edit-btn">Edit</button>
+                                <button class="delete-btn">Hapus</button>
+                            </td>
+                        </tr>
+                        <!-- More rows will be populated from database -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
