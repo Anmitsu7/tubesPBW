@@ -50,6 +50,11 @@ public class MainController {
     public String explore(Model model) {
         return "explore";
     }
+    
+    @GetMapping("/explore2")
+    public String explore2(Model model) {
+        return "explore2";
+    }
 
     @GetMapping("/profile")
     public String profile(Model model) {
