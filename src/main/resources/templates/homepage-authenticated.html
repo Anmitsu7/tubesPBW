@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelRental - Home</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/homepage-authenticated.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Main Container -->
+    <div>
+        <!-- Navigation -->
+        <nav class="navigation">
+            <div class="navigation-items">
+                <a href="#" class="brand">Rent Film</a>
+
+                <div class="nav-links">
+                    <a href="/homepage-authenticated">Home</a>
+                    <a href="/about">About us</a>
+                    <a href="/explore">Explore</a>
+                </div>
+
+                <div id="userSection" class="user-section">
+                    <div class="user-dropdown">
+                        <span id="username" th:text="${username}" class="dropdown-trigger">Username</span>
+                        <div id="dropdownContent" class="dropdown-content">
+                            <a href="/profile">Profile</a>
+                            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                                <a href="#" onclick="this.closest('form').submit(); return false;">Logout</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        </nav>
+
+        <!-- Main Content -->
+        <section class="home">
+            <!-- Welcome Content -->
+            <div class="content active">
+                <h1>Selamat Datang di ReelRental</h1>
+                <h2>Kenapa Memilih Kami?</h2>
+                <ul>
+                    <li>Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit</li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah</li>
+                </ul>
+            </div>
+
+            <!-- Latest Films -->
+            <div th:if="${latestFilms != null}" class="film-section">
+                <h2>Film Terbaru</h2>
+                <div class="film-grid">
+                    <div class="film-card" th:each="film : ${latestFilms}">
+                        <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}"
+                            onerror="this.src='/images/default-cover.jpg'">
+                        <div class="film-info">
+                            <h3 th:text="${film.judul}">Film Title</h3>
+                            <p th:text="${film.deskripsi}">Description</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Films -->
+            <div th:if="${recommendedFilms != null}" class="film-section">
+                <h2>Film Populer</h2>
+                <div class="film-grid">
+                    <div class="film-card" th:each="film : ${recommendedFilms}">
+                        <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}"
+                            onerror="this.src='/images/default-cover.jpg'">
+                        <div class="film-info">
+                            <h3 th:text="${film.judul}">Film Title</h3>
+                            <p th:text="${film.deskripsi}">Description</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <!-- Slider Navigation -->
+    <div class="slider-navigation">
+        <div class="nav-btn active"></div>
+        <div class="nav-btn"></div>
+        <div class="nav-btn"></div>
+        <div class="nav-btn"></div>
+        <div class="nav-btn"></div>
+    </div>
+    </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('dropdownContent');
+
+            // Toggle dropdown on click
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

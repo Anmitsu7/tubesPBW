@@ -1,6 +1,5 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,19 +16,6 @@ public class Product {
     private String judul;
     private int tahunRilis;
     private int stok;
-
-     
-    @Column(name = "cover_url") // Pastikan nama kolom sesuai dengan nama di tabel
-    private String coverUrl;
-
-    // Getter dan setter untuk coverUrl
-    public String getCoverUrl() {
-        return coverUrl;
-    }
-
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
 
     // Getter dan Setter
     public Long getId() {

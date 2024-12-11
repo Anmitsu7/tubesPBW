@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ReelRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>ReelRental Admin</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active">
+                    <a href="/admin/dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/films">
+                        <i class="fas fa-film"></i>
+                        <span>Films</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/users">
+                        <i class="fas fa-users"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/rentals">
+                        <i class="fas fa-receipt"></i>
+                        <span>Rentals</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/genres">
+                        <i class="fas fa-tags"></i>
+                        <span>Genres</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/admin/actors">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Actors</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="user-nav">
+                    <div class="admin-dropdown">
+                        <span id="adminUsername" class="dropdown-trigger">
+                            <i class="fas fa-user-circle"></i>
+                            <span th:text="${username}">Admin</span>
+                        </span>
+                        <div id="adminDropdown" class="dropdown-content">
+                            <a href="/admin/profile">
+                                <i class="fas fa-user-cog"></i> Profile
+                            </a>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-film"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Films</h3>
+                            <p th:text="${totalFilms}">150</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Users</h3>
+                            <p th:text="${activeUsers}">1,250</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Active Rentals</h3>
+                            <p th:text="${activeRentals}">48</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Monthly Revenue</h3>
+                            <p th:text="${monthlyRevenue}">$5,280</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="recent-activities">
+                    <h2>Recent Activities</h2>
+                    <div class="activities-list">
+                        <div class="activity-item" th:each="activity : ${recentActivities}">
+                            <div class="activity-icon">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                            <div class="activity-details">
+                                <p th:text="${activity.description}">New rental by John Doe</p>
+                                <span class="activity-time" th:text="${activity.time}">2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Films -->
+                <div class="popular-films">
+                    <h2>Popular Films</h2>
+                    <div class="films-grid">
+                        <div class="film-card" th:each="film : ${popularFilms}">
+                            <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}">
+                            <div class="film-info">
+                                <h3 th:text="${film.judul}">Film Title</h3>
+                                <p class="rentals" th:text="${film.totalRentals + ' rentals'}">125 rentals</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('adminDropdown');
+
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
