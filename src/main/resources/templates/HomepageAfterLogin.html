@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelRental</title>
+    <link rel="stylesheet" href="css/Homepage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <a href="#" class="brand">Rent Film</a>
+        <div class="menu-btn"></div>
+        <div class="navigation">
+            <div class="navigation-items">
+                <a href="/homepage">Home</a>
+                <a href="/about">About us</a>
+                <a href="/explore">Explore</a>
+                <!-- Remove Login and Signup links -->
+                <!-- Add user section dynamically -->
+                <div class="user-section" id="userSection">
+                    <div class="user-dropdown">
+                        <span id="username">Username</span>
+                        <div class="dropdown-content">
+                            <a href="/profile">Profile</a>
+                            <a href="/homepage" id="logoutBtn">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section  class ="home"> 
+        <video class ="video-slide active" src="Film/BlackClover.mp4" autoplay muted loop ></video>
+        <video class ="video-slide " src="Film/Avengers.mp4 " autoplay muted loop ></video>
+        <video class ="video-slide" src="Film/Transformers.mp4" autoplay muted loop ></video>
+         <video class ="video-slide" src="Film/Naruto.mp4" autoplay muted loop ></video>
+        <video class ="video-slide" src="Film/RushHour.mp4" autoplay muted loop ></video>
+
+                
+
+     
+        <div class ="content active">
+            <h1>Selamat Datang di ReelRental. <br> <span><h2></h2>Kenapa Memilih Kami?</span> </h1>
+            <p><ul>
+                <li>
+                    Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit </li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul.</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya.</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah.</li>
+            </ul>
+        </p>
+        <a href="#">Read More</a>
+        </div>
+        <div class="media-icons">
+            <a href="#"> <i class = "fab fa-facebook-f"></i></a>
+            <a href="#"> <i class = "fab fa-instagram"></i></a>
+            <a href="#">  <i class = "fab fa-twitter"></i></a>
+        </div>
+        <div class ="content">
+            <h1>Selamat Datang di ReelRental. <br> <span>Kenapa Memilih Kami?</span> </h1>
+            <p><ul>
+                <li>
+                    Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit </li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul.</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya.</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah.</li>
+            </ul>
+        </p>
+        <a href="#">Read More</a>
+        </div>
+        <div class ="content">
+            <h1>Avengers Infinity War <br> <span>GACOR</span> </h1>
+            <p><ul>
+                <li>
+                    Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit </li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul.</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya.</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah.</li>
+            </ul>
+        </p>
+        <a href="#">Read More</a>
+        </div>
+        <div class ="content">
+            <h1>Selamat Datang di ReelRental. <br> <span>Kenapa Memilih Kami?</span> </h1>
+            <p><ul>
+                <li>
+                    Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit </li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul.</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya.</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah.</li>
+            </ul>
+        </p>
+        <a href="#">Read More</a>
+        </div>
+        <div class ="content">
+            <h1>Selamat Datang di ReelRental. <br> <span>Kenapa Memilih Kami?</span> </h1>
+            <p><ul>
+                <li>
+                    Koleksi Lengkap: Ribuan film dari berbagai genre dan aktor favorit </li>
+                    <li>Kemudahan Pencarian: Temukan film dengan filter berdasarkan genre, aktor, atau judul.</li>
+                    <li>Layanan Cepat: Sewa film kapan saja dan nikmati kemudahannya.</li>
+                    <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah.</li>
+            </ul>
+        </p>
+        <a href="#">Read More</a>
+        </div>
+
+        <div class="slider-navigation"> 
+            <div class="nav-btn"></div>
+            <div class="nav-btn"></div>
+            <div class="nav-btn"></div>
+            <div class="nav-btn"></div>
+            <div class="nav-btn"></div>
+
+        </div>
+
+    </section>
+
+    <script type="text/javascript">
+        // Existing slider navigation script
+        const menuBtn = document.querySelector(".menu-btn");
+        const navigation = document.querySelector(".navigation");
+        menuBtn.addEventListener("click", () => {
+            menuBtn.classList.toggle("active");
+            navigation.classList.toggle("active");
+        });
+
+        const btns = document.querySelectorAll(".nav-btn");
+        const slides = document.querySelectorAll(".video-slide");
+        const contents = document.querySelectorAll(".content");
+
+        var sliderNav = function (manual) {
+            btns.forEach((btn) => {
+                btn.classList.remove("active");
+            });
+
+            slides.forEach((slide) => {
+                slide.classList.remove("active");
+            });
+
+            contents.forEach((content) => {
+                content.classList.remove("active");
+            });
+
+            btns[manual].classList.add("active");
+            slides[manual].classList.add("active");
+            contents[manual].classList.add("active");
+        }
+
+        btns.forEach((btn, i) => {
+            btn.addEventListener("click", () => {
+                sliderNav(i);
+            });
+        });
+
+        // New authentication-related script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch user data (this should be implemented on the server-side)
+            async function fetchUserData() {
+                try {
+                    const response = await fetch('/user-data');
+                    if (response.ok) {
+                        const userData = await response.json();
+                        document.getElementById('username').textContent = userData.username;
+                    } else {
+                        // If user data fetch fails, redirect to login
+                        window.location.href = '/login';
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    window.location.href = '/login';
+                }
+            }
+
+            // Logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    const response = await fetch('/logout', { method: 'POST' });
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        alert('Logout failed. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('An error occurred during logout');
+                }
+            });
+
+            // Fetch user data when page loads
+            fetchUserData();
+        });
+    </script>
+</body>
+
+</html>
