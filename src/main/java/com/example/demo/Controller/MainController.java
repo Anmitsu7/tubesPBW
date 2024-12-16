@@ -286,4 +286,36 @@ public class MainController {
         }
         return "redirect:/home";
     }
+
+
+
+    
+//-------------------------------------------------------------------------------------------------
+//buat admin
+
+//dashboard admin
+    @GetMapping("/admin/dashboard")
+    public String showDashboard(Model model) {
+        try {
+            // Stats cards
+            model.addAttribute("totalFilms", filmService.getTotalFilms());
+            model.addAttribute("activeUsers", userService.getTotalActiveUsers());  // sesuaikan nama
+            model.addAttribute("activeRentals", adminService.getTotalActiveRentals());  // sesuaikan nama
+            model.addAttribute("monthlyRevenue", adminService.getMonthlyRevenue());  // tambahkan ini
+            
+            // Recent activities
+            model.addAttribute("recentActivities", adminService.getRecentActivities());  // ubah dari recentRentals
+            
+            // Popular films
+            model.addAttribute("popularFilms", filmService.getPopularFilms());
+            
+            // Add username for header
+            model.addAttribute("username", SecurityContextHolder.getContext().getAuthentication().getName());
+            
+            return "admin/dashboard";  // pastikan path template sesuai
+        } catch (Exception e) {
+            logger.error("Error loading admin dashboard", e);
+            return "error/500";
+        }
+    }
 }

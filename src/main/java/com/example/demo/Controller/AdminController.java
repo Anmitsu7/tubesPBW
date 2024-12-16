@@ -30,7 +30,7 @@ public class AdminController {
     private UserService userService;
 
     // Dashboard Page
-    @GetMapping("/dashboard")
+    @GetMapping("/admin/dashboard")
     public String showDashboard(Model model) {
         try {
             // Add dashboard data
@@ -41,7 +41,7 @@ public class AdminController {
             model.addAttribute("popularFilms", filmService.getPopularFilms());
             model.addAttribute("recentRentals", adminService.getRecentRentals());
             
-            return "admin/dashboard";
+            return "admin/Homepage";
         } catch (Exception e) {
             logger.error("Error loading admin dashboard", e);
             return "error/500";
