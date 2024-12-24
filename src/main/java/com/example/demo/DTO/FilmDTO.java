@@ -8,6 +8,8 @@ import java.util.List;
 
 
 public class FilmDTO {
+
+    private Integer totalRentals;
     
     @NotBlank(message = "Judul film tidak boleh kosong")
     @Size(min = 1, max = 200, message = "Judul film harus antara 1 dan 200 karakter")
@@ -92,5 +94,13 @@ public class FilmDTO {
 
     public void setAktorIds(List<Long> aktorIds) {
         this.aktorIds = aktorIds;
+    }
+
+    public Integer getTotalRentals() {
+        return totalRentals;
+    }
+    
+    public void setTotalRentals(Integer totalRentals) {
+        this.totalRentals = totalRentals;
     }
 }
