@@ -2,8 +2,11 @@ package com.example.demo.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
+@Data
 public class AktorDTO {
+    private Long id;
     
     @NotBlank(message = "Nama aktor tidak boleh kosong")
     @Size(min = 2, max = 100, message = "Nama aktor harus antara 2 dan 100 karakter")
@@ -51,5 +54,13 @@ public class AktorDTO {
                 ", negaraAsal='" + negaraAsal + '\'' +
                 ", fotoUrl='" + fotoUrl + '\'' +
                 '}';
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

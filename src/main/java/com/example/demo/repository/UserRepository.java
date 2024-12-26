@@ -16,18 +16,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.lastLoginTime IS NOT NULL ORDER BY u.lastLoginTime DESC LIMIT 10")
     List<User> findRecentLogins();
     
-    @Query("""
-        SELECT u FROM User u 
-        WHERE EXISTS (
-            SELECT p FROM Penyewaan p 
-            WHERE p.pengguna = u AND p.status = 'DISEWA'
-        )
-    """)
-    List<User> findActiveUsers();
-    
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
 
     long countByLastLoginTimeIsNotNull();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE EXISTS (SELECT p FROM Penyewaan p WHERE p.pengguna = u AND p.status = 'DISEWA')")
+    Long countActiveUsers();
+
+    @Query("SELECT u FROM User u WHERE EXISTS (SELECT p FROM Penyewaan p WHERE p.pengguna = u AND p.status = 'DISEWA')")
+    List<User> findActiveUsers();
 }
