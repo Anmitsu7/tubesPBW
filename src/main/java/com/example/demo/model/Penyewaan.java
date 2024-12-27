@@ -30,7 +30,6 @@ public class Penyewaan {
     @Column(nullable = false)
     private String status;
 
-    // Additional fields
     @Column(name = "rental_duration")
     private Integer rentalDuration;
 
@@ -47,54 +46,81 @@ public class Penyewaan {
     private LocalDateTime updatedAt;
 
     // Constructors
-    public Penyewaan() {}
+    public Penyewaan() {
+        this.status = "DISEWA"; // Set default status
+    }
 
     public Penyewaan(User pengguna, Film film, LocalDate tanggalSewa) {
+        this();
         this.pengguna = pengguna;
         this.film = film;
         this.tanggalSewa = tanggalSewa;
-        this.status = "DISEWA";
     }
 
     // JPA callbacks
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        
         if (tanggalSewa == null) {
             tanggalSewa = LocalDate.now();
         }
+        
+        if (status == null) {
+            status = "DISEWA";
+        }
+        
+        validateDates();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        validateDates();
+        
+        // Update rental duration and late fee if applicable
+        if (status.equals("DIKEMBALIKAN") && tanggalKembali != null) {
+            this.rentalDuration = calculateDuration();
+            this.lateFee = calculateLateFee();
+        }
     }
 
     // Business logic methods
     public void kembalikan() {
+        validateCanBeReturned();
         this.status = "DIKEMBALIKAN";
         this.tanggalKembali = LocalDate.now();
         this.rentalDuration = calculateDuration();
         this.lateFee = calculateLateFee();
         if (this.film != null) {
-            this.film.incrementAvailableStock();
+            this.film.incrementStock();
+        }
+    }
+
+    private void validateCanBeReturned() {
+        if (!canBeReturned()) {
+            throw new IllegalStateException("Penyewaan tidak dapat dikembalikan karena status: " + status);
         }
     }
 
     public boolean isOverdue() {
-        return status.equals("DISEWA") && 
-               LocalDate.now().isAfter(tanggalSewa.plusDays(7));
+        if (!status.equals("DISEWA")) {
+            return false;
+        }
+        LocalDate batasWaktu = tanggalSewa.plusDays(7);
+        return LocalDate.now().isAfter(batasWaktu);
     }
 
     public long getDurationInDays() {
-        if (tanggalKembali == null) {
+        if (tanggalKembali == null || tanggalSewa == null) {
             return 0;
         }
         return java.time.temporal.ChronoUnit.DAYS.between(tanggalSewa, tanggalKembali);
     }
 
     private Integer calculateDuration() {
-        if (tanggalKembali == null) {
+        if (tanggalKembali == null || tanggalSewa == null) {
             return null;
         }
         return (int) getDurationInDays();
@@ -104,23 +130,18 @@ public class Penyewaan {
         if (!isOverdue() || tanggalKembali == null) {
             return 0.0;
         }
-        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(
-            tanggalSewa.plusDays(7), 
-            tanggalKembali
-        );
-        return daysLate * 1000.0; // Rp 1000 per day late fee
+        LocalDate batasWaktu = tanggalSewa.plusDays(7);
+        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(batasWaktu, tanggalKembali);
+        return Math.max(0, daysLate * 1000.0); // Minimum 0 Rupiah
     }
 
-    // Validation method
-    @PrePersist
-    @PreUpdate
+    // Validation methods
     private void validateDates() {
         if (tanggalKembali != null && tanggalKembali.isBefore(tanggalSewa)) {
             throw new IllegalStateException("Tanggal kembali tidak boleh sebelum tanggal sewa");
         }
     }
 
-    // Status management methods
     public boolean canBeReturned() {
         return "DISEWA".equals(status);
     }
@@ -129,6 +150,21 @@ public class Penyewaan {
         if (!"DISEWA".equals(status)) {
             throw new IllegalStateException("Hanya penyewaan aktif yang dapat diperpanjang");
         }
-        this.tanggalKembali = tanggalKembali.plusDays(days);
+        if (days <= 0) {
+            throw new IllegalArgumentException("Jumlah hari perpanjangan harus positif");
+        }
+        LocalDate newTanggalKembali = (tanggalKembali != null) ? 
+            tanggalKembali.plusDays(days) : 
+            tanggalSewa.plusDays(days);
+        this.tanggalKembali = newTanggalKembali;
+    }
+
+    // Getter and setter untuk ID (karena menggunakan @Data dari Lombok)
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

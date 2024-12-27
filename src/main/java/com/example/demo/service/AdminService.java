@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -230,7 +231,7 @@ public class AdminService {
         try {
             stats.put("totalRentals", penyewaanRepository.count());
             stats.put("activeRentals", getTotalActiveRentals());
-            stats.put("popularFilms", penyewaanRepository.findMostRentedFilms());
+            stats.put("popularFilms", penyewaanRepository.findMostRentedFilms(PageRequest.of(0, 10)));
             stats.put("rentalsByGenre", penyewaanRepository.getGenrePopularity(LocalDate.now().getYear()));
             stats.put("customerStats", getCustomerInsights());
         } catch (Exception e) {
@@ -489,6 +490,23 @@ public class AdminService {
         } catch (Exception e) {
             logger.error("Error calculating image storage size: {}", e.getMessage());
             return 0L;
+        }
+    }
+
+    public ResponseEntity<?> getMonthlyReport(Integer year, Integer month) {
+        Map<String, Object> report = generateMonthlyReport(year, month);
+        return ResponseEntity.ok(report);
+    }
+
+    public ResponseEntity<byte[]> generateMonthlyReportPDF(int year, int month) {
+        try {
+            Map<String, Object> reportData = generateMonthlyReport(year, month);
+            // Implementasi generate PDF dari reportData
+            // Contoh return kosong
+            return ResponseEntity.ok().body(new byte[0]);
+        } catch (Exception e) {
+            logger.error("Error generating PDF report: {}", e.getMessage());
+            throw new RuntimeException("Gagal generate laporan PDF", e);
         }
     }
 }

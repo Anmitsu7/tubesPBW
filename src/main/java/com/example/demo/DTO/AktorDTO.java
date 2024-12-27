@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class AktorDTO {
@@ -17,11 +18,22 @@ public class AktorDTO {
     private String negaraAsal;
 
     private String fotoUrl;
+    
+    // Tambahkan field baru
+    private List<String> filmList;
+    private int totalFilms;
 
     // Constructors
     public AktorDTO() {}
+    
+    public AktorDTO(Long id, String nama, String negaraAsal, String fotoUrl) {
+        this.id = id;
+        this.nama = nama;
+        this.negaraAsal = negaraAsal;
+        this.fotoUrl = fotoUrl;
+    }
 
-    // Getters and Setters
+    // Getters and Setters yang sudah ada
     public String getNama() {
         return nama;
     }
@@ -46,21 +58,41 @@ public class AktorDTO {
         this.fotoUrl = fotoUrl;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    // Tambahkan getter dan setter untuk field baru
+    public List<String> getFilmList() {
+        return filmList;
+    }
+
+    public void setFilmList(List<String> filmList) {
+        this.filmList = filmList;
+    }
+
+    public int getTotalFilms() {
+        return totalFilms;
+    }
+
+    public void setTotalFilms(int totalFilms) {
+        this.totalFilms = totalFilms;
+    }
+
     // Untuk memudahkan debugging
     @Override
     public String toString() {
         return "AktorDTO{" +
-                "nama='" + nama + '\'' +
+                "id=" + id +
+                ", nama='" + nama + '\'' +
                 ", negaraAsal='" + negaraAsal + '\'' +
                 ", fotoUrl='" + fotoUrl + '\'' +
+                ", totalFilms=" + totalFilms +
+                ", filmList=" + filmList +
                 '}';
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 }

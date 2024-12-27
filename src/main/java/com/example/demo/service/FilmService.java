@@ -25,6 +25,8 @@ import com.example.demo.repository.AktorRepository;
 import com.example.demo.repository.GenreRepository;
 import com.example.demo.repository.PenyewaanRepository;
 
+import com.example.demo.model.Aktor;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

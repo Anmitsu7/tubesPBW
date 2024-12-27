@@ -47,29 +47,22 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
     """)
     List<Film> findMostRentedFilms(Pageable pageable);
     
-    @Query("""
-        SELECT COUNT(p) 
-        FROM Penyewaan p 
-        WHERE p.film.id = :filmId AND p.status = :status
-    """)
-    Long countActiveRentals(Long filmId, String status);
+    @Query("SELECT COUNT(p) FROM Penyewaan p WHERE p.film.id = :filmId AND p.status = :status")
+    Long countActiveRentals(@Param("filmId") Long filmId, @Param("status") String status);
 
     // Stock management queries
-    @Query("""
-        SELECT f FROM Film f 
-        WHERE f.stok <= :threshold 
-        ORDER BY f.stok ASC
-    """)
+    @Query("SELECT f FROM Film f WHERE f.stok <= :threshold ORDER BY f.stok ASC")
     List<Film> findLowStockFilms(@Param("threshold") int threshold);
 
     // Statistics queries
     @Query("""
         SELECT new map(
-            f.genre.nama as genre,
+            g.nama as genre,
             COUNT(f) as total
         )
         FROM Film f
-        GROUP BY f.genre.nama
+        JOIN f.genre g
+        GROUP BY g.nama
     """)
     List<Map<String, Object>> getFilmCountByGenre();
 
@@ -91,7 +84,7 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
         LEFT JOIN Penyewaan p ON p.film = f 
         WHERE p.tanggalSewa BETWEEN :startDate AND :endDate 
         GROUP BY f 
-        ORDER BY rentalCount DESC
+        ORDER BY COUNT(p) DESC
     """)
     List<Object[]> getFilmRentalStats(
         @Param("startDate") LocalDate startDate,
@@ -101,16 +94,13 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
     // Actor related queries
     @Query("""
         SELECT f FROM Film f 
-        JOIN f.aktorList a 
+        JOIN f.actors a 
         WHERE a.id = :aktorId
     """)
     List<Film> findByAktorId(@Param("aktorId") Long aktorId);
 
     // Dashboard queries
-    @Query("""
-        SELECT f FROM Film f 
-        ORDER BY f.createdAt DESC
-    """)
+    @Query("SELECT f FROM Film f ORDER BY f.createdAt DESC")
     List<Film> findLatestAddedFilms(Pageable pageable);
 
     @Query("""
@@ -119,7 +109,7 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
         LEFT JOIN Penyewaan p ON p.film = f
         WHERE p.tanggalSewa >= :startDate
         GROUP BY f
-        ORDER BY rentCount DESC
+        ORDER BY COUNT(p) DESC
     """)
     List<Object[]> findPopularFilmsInPeriod(
         @Param("startDate") LocalDate startDate,
@@ -127,31 +117,24 @@ public interface FilmRepository extends JpaRepository<Film, Long> {
     );
 
     // Stock alerts
-    @Query("""
-        SELECT f FROM Film f
-        WHERE f.stok = 0
-    """)
+    @Query("SELECT f FROM Film f WHERE f.stok = 0")
     List<Film> findOutOfStockFilms();
 
-    @Query("""
-        SELECT COUNT(f)
-        FROM Film f
-        WHERE f.stok = 0
-    """)
+    @Query("SELECT COUNT(f) FROM Film f WHERE f.stok = 0")
     Long countOutOfStockFilms();
 
     // Advanced statistics
     @Query("""
         SELECT new map(
-            YEAR(p.tanggalSewa) as year,
-            MONTH(p.tanggalSewa) as month,
+            EXTRACT(YEAR FROM p.tanggalSewa) as year,
+            EXTRACT(MONTH FROM p.tanggalSewa) as month,
             COUNT(p) as totalRentals,
             f.judul as filmTitle
         )
         FROM Film f
         JOIN Penyewaan p ON p.film = f
         WHERE f.id = :filmId
-        GROUP BY YEAR(p.tanggalSewa), MONTH(p.tanggalSewa), f.judul
+        GROUP BY EXTRACT(YEAR FROM p.tanggalSewa), EXTRACT(MONTH FROM p.tanggalSewa), f.judul
         ORDER BY year DESC, month DESC
     """)
     List<Map<String, Object>> getFilmMonthlyRentalStats(@Param("filmId") Long filmId);

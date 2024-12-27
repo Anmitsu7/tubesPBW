@@ -19,18 +19,20 @@ public class Film {
     @Column(columnDefinition = "TEXT")
     private String deskripsi;
 
+    @Column(name = "tahun_rilis")
     private Integer tahunRilis;
 
     @Column(nullable = false)
     private Integer stok;
 
+    @Column(name = "cover_url")
     private String coverUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "film_aktor",
         joinColumns = @JoinColumn(name = "film_id"),
@@ -38,45 +40,35 @@ public class Film {
     )
     private Set<Aktor> actors;
 
-    // Audit fields
+    @OneToMany(mappedBy = "film", fetch = FetchType.LAZY)
+    private Set<Penyewaan> penyewaans;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_by")
-    private String createdBy;
-
-    @Column(name = "updated_by")
-    private String updatedBy;
-
-    // Rental tracking fields
-    @Column(name = "total_rentals")
-    private Integer totalRentals = 0;
-
-    @Column(name = "available_stock")
-    private Integer availableStock;
-
-    @OneToMany(mappedBy = "film")
-    private Set<Penyewaan> penyewaans;
-
     // Constructors
-    public Film() {}
+    public Film() {
+        this.stok = 0;
+        this.createdAt = LocalDateTime.now();
+    }
 
     public Film(String judul, String deskripsi, Integer tahunRilis, Integer stok) {
+        this();
         this.judul = judul;
         this.deskripsi = deskripsi;
         this.tahunRilis = tahunRilis;
         this.stok = stok;
-        this.availableStock = stok;
     }
 
     // JPA callbacks
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        availableStock = stok;
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 
     @PreUpdate
@@ -86,25 +78,32 @@ public class Film {
 
     // Helper methods
     public boolean isAvailable() {
-        return availableStock > 0;
+        return stok > 0;
     }
 
-    public void incrementTotalRentals() {
-        this.totalRentals++;
-        this.availableStock--;
-    }
-
-    public void decrementAvailableStock() {
-        if (this.availableStock > 0) {
-            this.availableStock--;
+    public void decrementStock() {
+        if (this.stok > 0) {
+            this.stok--;
+        } else {
+            throw new IllegalStateException("Stok film sudah habis");
         }
     }
 
-    public void incrementAvailableStock() {
-        if (this.availableStock < this.stok) {
-            this.availableStock++;
-        }
+    public void incrementStock() {
+        this.stok++;
     }
 
-    // Additional getters and setters if needed
+    // Equals and HashCode (override from @Data to prevent circular reference)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Film)) return false;
+        Film film = (Film) o;
+        return id != null && id.equals(film.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
