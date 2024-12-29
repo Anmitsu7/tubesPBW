@@ -29,14 +29,21 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User tidak ditemukan: " + username));
 
-        // Convert User.UserRole to GrantedAuthority
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+        
+        // Update last login time
+        user.setLastLoginTime(LocalDateTime.now());
+        userRepository.save(user);
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
+                user.isEnabled(),
+                user.isAccountNonExpired(),
+                user.isCredentialsNonExpired(),
+                user.isAccountNonLocked(),
                 Collections.singletonList(authority));
     }
 
@@ -53,26 +60,30 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User registerUser(RegisterRequest request) {
         try {
-            logger.info("Attempting to register new user: {}", request.getUsername());
-
-            // Validasi request
+            logger.info("Starting registration process for user: {}", request.getUsername());
+            
+            // Log validasi
+            logger.info("Validating registration data");
             validateRegistration(request);
-
-            // Buat user baru
+            
             User newUser = new User();
             newUser.setUsername(request.getUsername());
             newUser.setEmail(request.getEmail());
             newUser.setPassword(passwordEncoder.encode(request.getPassword()));
             newUser.setRole(User.UserRole.PELANGGAN);
             newUser.setCreatedAt(LocalDateTime.now());
+            newUser.setEnabled(true);
+            newUser.setAccountNonLocked(true);
+            newUser.setAccountNonExpired(true);
+            newUser.setCredentialsNonExpired(true);
 
-            // Save user
+            logger.info("Saving user to database");
             User savedUser = userRepository.save(newUser);
-            logger.info("Successfully registered new user: {}", savedUser.getUsername());
+            logger.info("User saved successfully with ID: {}", savedUser.getId());
 
             return savedUser;
         } catch (Exception e) {
-            logger.error("Error registering user: {}", e.getMessage(), e);
+            logger.error("Error in registerUser: {}", e.getMessage(), e);
             throw new RuntimeException("Terjadi kesalahan saat menyimpan pengguna baru: " + e.getMessage());
         }
     }
@@ -297,5 +308,84 @@ public class UserService implements UserDetailsService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public User createAdminUser(String username, String password, String email) {
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username sudah digunakan");
+        }
+
+        User adminUser = new User();
+        adminUser.setUsername(username);
+        adminUser.setPassword(passwordEncoder.encode(password));
+        adminUser.setEmail(email);
+        adminUser.setRole(User.UserRole.ADMIN);
+        adminUser.setEnabled(true);
+        adminUser.setCreatedAt(LocalDateTime.now());
+
+        return userRepository.save(adminUser);
+    }
+
+    @Transactional
+    public void disableUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        user.setEnabled(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void enableUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void lockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        user.setAccountNonLocked(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unlockUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        user.setAccountNonLocked(true);
+        userRepository.save(user);
+    }
+
+    // Method untuk validasi password
+    public boolean isValidPassword(String password) {
+        return password != null &&
+               password.length() >= 8 &&
+               password.matches(".*[A-Z].*") &&    // at least one uppercase
+               password.matches(".*[a-z].*") &&    // at least one lowercase
+               password.matches(".*\\d.*");        // at least one digit
+    }
+
+    // Method untuk reset password
+    @Transactional
+    public void resetPassword(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+        
+        String temporaryPassword = generateTemporaryPassword();
+        user.setPassword(passwordEncoder.encode(temporaryPassword));
+        user.setCredentialsNonExpired(false);
+        
+        userRepository.save(user);
+        
+        // TODO: Send email with temporary password
+        logger.info("Password reset for user: {}", username);
+    }
+
+    private String generateTemporaryPassword() {
+        // Generate a random 10-character password
+        return UUID.randomUUID().toString().substring(0, 10);
     }
 }
