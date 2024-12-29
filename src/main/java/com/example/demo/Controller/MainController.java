@@ -97,7 +97,16 @@ public class MainController {
         try {
             Optional<Map<String, Object>> authResult = userService.authenticateUser(loginRequest);
             if (authResult.isPresent()) {
-                return "redirect:/homepage-authenticated";
+                // Cek role user
+                Map<String, Object> userData = authResult.get();
+                String role = (String) userData.get("role");
+                
+                // Redirect berdasarkan role
+                if ("ADMIN".equals(role)) {
+                    return "redirect:/admin/dashboard";
+                } else {
+                    return "redirect:/homepage-authenticated";
+                }
             } else {
                 model.addAttribute("error", "Username atau password salah");
                 return "login";
@@ -112,62 +121,55 @@ public class MainController {
     @GetMapping("/register")
     public String registerPage(Model model, Authentication authentication) {
         if (authentication != null) {
-            return determineHomepage(authentication);
+            return "redirect:/";
         }
         model.addAttribute("registerRequest", new RegisterRequest());
         return "register";
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest,
-            BindingResult result) {
+    @ResponseBody
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            logger.info("Processing registration request for username: {}", registerRequest.getUsername());
+            logger.info("Processing registration for username: {}", registerRequest.getUsername());
 
-            // Validation checks
-            if (result.hasErrors()) {
-                logger.warn("Validation errors in registration request");
-                return ResponseEntity.badRequest()
-                        .body(Map.of("errors", result.getAllErrors()));
-            }
-
-            // Check username
+            // Validasi username dan email yang sudah ada
             if (userService.existsByUsername(registerRequest.getUsername())) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Username sudah digunakan"));
+                    .body(Map.of("message", "Username sudah digunakan"));
             }
-
-            // Check email
             if (userService.existsByEmail(registerRequest.getEmail())) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Email sudah digunakan"));
+                    .body(Map.of("message", "Email sudah digunakan"));
             }
 
-            // Create user
-            User user = new User();
-            user.setUsername(registerRequest.getUsername());
-            user.setEmail(registerRequest.getEmail());
-            user.setPassword(registerRequest.getPassword());
-            user.setRole(User.UserRole.PELANGGAN);
+            // Validasi password match
+            if (!registerRequest.getPassword().equals(registerRequest.getPasswordConfirm())) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Password tidak cocok"));
+            }
 
-            userService.saveUser(user);
-            logger.info("Successfully registered user: {}", user.getUsername());
-
+            // Register user
+            User savedUser = userService.registerUser(registerRequest);
+            
+            logger.info("Successfully registered user with id: {}", savedUser.getId());
             return ResponseEntity.ok()
-                    .body(Map.of("message", "Registrasi berhasil"));
+                .body(Map.of("message", "Registrasi berhasil"));
 
         } catch (Exception e) {
-            logger.error("Registration error: {}", e.getMessage(), e);
+            logger.error("Registration error: ", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("message", "Terjadi kesalahan saat registrasi: " + e.getMessage()));
+                .body(Map.of("message", "Terjadi kesalahan saat registrasi: " + e.getMessage()));
         }
     }
 
-    // Regular registration with form submit
     @PostMapping("/register-form")
     public String registerForm(@Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
             BindingResult result,
             Model model) {
+        
+        logger.info("Processing form registration for username: {}", registerRequest.getUsername());
+        
         if (result.hasErrors()) {
             return "register";
         }
@@ -191,14 +193,9 @@ public class MainController {
                 return "register";
             }
 
-            // Create new user
-            User user = new User();
-            user.setUsername(registerRequest.getUsername());
-            user.setEmail(registerRequest.getEmail());
-            user.setPassword(registerRequest.getPassword());
-            user.setRole(User.UserRole.PELANGGAN);
-
-            userService.saveUser(user);
+            // Register user
+            User savedUser = userService.registerUser(registerRequest);
+            logger.info("Successfully registered user with id: {}", savedUser.getId());
 
             return "redirect:/login?registered=true";
 
