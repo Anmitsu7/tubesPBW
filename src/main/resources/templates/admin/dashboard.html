@@ -86,9 +86,6 @@
                             <span th:text="${username}">Admin</span>
                         </span>
                         <div id="adminDropdown" class="dropdown-content">
-                            <a href="/admin/profile">
-                                <i class="fas fa-user-cog"></i> Profile
-                            </a>
                             <form th:action="@{/logout}" method="post">
                                 <button type="submit">
                                     <i class="fas fa-sign-out-alt"></i> Logout
