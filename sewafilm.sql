@@ -143,4 +143,4 @@ INSERT INTO genre (nama) VALUES
 
 -- Membuat admin default
 INSERT INTO pengguna (username, password, email, role) 
-VALUES ('admin', '$2a$10$DsgooQihdSDpjgwpwW7REOqAt75itONqXYNEeRcj3RpAhRuIeIU3a', 'admin@gmail.com', 'ADMIN');
+VALUES ('admin', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'admin@gmail.com', 'ADMIN');

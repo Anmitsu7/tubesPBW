@@ -68,7 +68,7 @@ public class AdminController {
 
     @PostMapping("/films/add")
     public String addFilm(@ModelAttribute FilmDTO filmDTO, 
-                         @RequestParam("coverImage") MultipartFile coverImage) {
+                         @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
         try {
             filmService.addFilm(filmDTO, coverImage);
             return "redirect:/admin/films?success=true";
@@ -161,7 +161,7 @@ public class AdminController {
 
     @PostMapping("/actors/add")
     public String addActor(@ModelAttribute AktorDTO aktorDTO, 
-                          @RequestParam("photoImage") MultipartFile photoImage) {
+                          @RequestParam(value="photoImage", required = false) MultipartFile photoImage) {
         try {
             filmService.addActor(aktorDTO, photoImage);
             return "redirect:/admin/actors?success=true";
