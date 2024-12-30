@@ -113,3 +113,34 @@ CREATE TRIGGER update_penyewaan_updated_at
     BEFORE UPDATE ON penyewaan
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Menambahkan data genre
+INSERT INTO genre (nama) VALUES
+    ('Action'),
+    ('Adventure'),
+    ('Animation'),
+    ('Comedy'),
+    ('Crime'),
+    ('Documentary'),
+    ('Drama'),
+    ('Family'),
+    ('Fantasy'),
+    ('Horror'),
+    ('Mystery'),
+    ('Romance'),
+    ('Science Fiction'),
+    ('Thriller'),
+    ('War'),
+    ('Western'),
+    ('Musical'),
+    ('Biography'),
+    ('Sport'),
+    ('Historical'),
+    ('Superhero'),
+    ('Martial Arts'),
+    ('Film Noir'),
+    ('Psychological');
+
+-- Membuat admin default
+INSERT INTO pengguna (username, password, email, role) 
+VALUES ('admin', '$2a$10$DsgooQihdSDpjgwpwW7REOqAt75itONqXYNEeRcj3RpAhRuIeIU3a', 'admin@gmail.com', 'ADMIN');

@@ -6,11 +6,11 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 public class FilmDTO {
-    
+
     private Long id;
 
     private Integer totalRentals;
-    
+
     @NotBlank(message = "Judul film tidak boleh kosong")
     @Size(min = 1, max = 200, message = "Judul film harus antara 1 dan 200 karakter")
     private String judul;
@@ -26,7 +26,7 @@ public class FilmDTO {
 
     @NotNull(message = "Genre harus dipilih")
     private Long genreId;
-    
+
     // Untuk menampilkan nama genre di UI
     private String genreNama;
 
@@ -38,7 +38,7 @@ public class FilmDTO {
 
     @NotEmpty(message = "Film harus memiliki minimal 1 aktor")
     private List<Long> aktorIds;
-    
+
     // Untuk menampilkan nama-nama aktor di UI
     private List<String> aktorNames;
 
@@ -52,16 +52,17 @@ public class FilmDTO {
     private Boolean isAvailable;
     private Integer availableStock;
     private Integer rentedCount;
-    
+
     // Rating dan Review
     private Double averageRating;
     private Integer totalReviews;
 
     // Constructors
-    public FilmDTO() {}
+    public FilmDTO() {
+    }
 
-    public FilmDTO(Long id, String judul, String deskripsi, Integer tahunRilis, 
-                  Long genreId, Integer stok, String coverUrl) {
+    public FilmDTO(Long id, String judul, String deskripsi, Integer tahunRilis,
+            Long genreId, Integer stok, String coverUrl) {
         this.id = id;
         this.judul = judul;
         this.deskripsi = deskripsi;
@@ -155,7 +156,7 @@ public class FilmDTO {
     public Integer getTotalRentals() {
         return totalRentals;
     }
-    
+
     public void setTotalRentals(Integer totalRentals) {
         this.totalRentals = totalRentals;
     }
