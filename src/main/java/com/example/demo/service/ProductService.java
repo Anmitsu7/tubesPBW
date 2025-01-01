@@ -14,8 +14,12 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> searchProducts(String judul, int tahunMin, int tahunMax, int stokMin) {
-        return productRepository.findByJudulContainingIgnoreCaseAndTahunRilisBetweenAndStokGreaterThanEqual(
-            judul, tahunMin, tahunMax, stokMin);
+    public List<Product> searchProducts(String judul, int tahunMin, int tahunMax, int stokMin, List<Long> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return productRepository.findByJudulContainingIgnoreCaseAndTahunRilisBetweenAndStokGreaterThanEqual(
+                judul, tahunMin, tahunMax, stokMin);
+        }
+        return productRepository.findByJudulContainingIgnoreCaseAndTahunRilisBetweenAndStokGreaterThanEqualAndGenresIn(
+            judul, tahunMin, tahunMax, stokMin, genres);
     }
 }

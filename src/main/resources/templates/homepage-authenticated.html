@@ -7,9 +7,21 @@
     <title>ReelRental - Home</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/css/homepage-authenticated.css" rel="stylesheet">
+    <style>
+        .content-loading {
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+        }
+
+        .content-loaded {
+            opacity: 1;
+        }
+    </style>
 </head>
 
 <body>
+
+
     <!-- Main Container -->
     <div>
         <!-- Navigation -->
@@ -34,7 +46,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
         </nav>
+
 
         <!-- Main Content -->
         <section class="home">
@@ -49,6 +63,40 @@
                     <li>Laporan Pemakaian: Cek riwayat penyewaan Anda dengan mudah</li>
                 </ul>
             </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <h2>Cari Film</h2>
+                <form id="searchForm" class="search-form">
+                    <div class="search-inputs">
+                        <div class="search-field">
+                            <input type="text" id="titleSearch" name="title" placeholder="Judul Film"
+                                class="search-input">
+                        </div>
+                        <div class="search-field">
+                            <input type="text" id="actorSearch" name="actor" placeholder="Nama Aktor"
+                                class="search-input">
+                        </div>
+                    </div>
+
+                    <div class="genre-section">
+                        <h3>Genre</h3>
+                        <div class="genre-grid">
+                            <!-- Iterasi melalui daftar genre -->
+                            <div th:each="genre : ${genres}" class="genre-item">
+                                <input type="checkbox" th:id="'genre-' + ${genre.id}" th:name="genres" th:value="${genre.id}" class="genre-checkbox">
+                                <label th:for="'genre-' + ${genre.id}" th:text="${genre.nama}">Genre Name</label>
+                            </div>
+                        </div>
+                    </div>
+                                   
+
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i> Cari Film
+                    </button>
+                </form>
+            </div>
+
 
             <!-- Latest Films -->
             <div th:if="${latestFilms != null}" class="film-section">
@@ -81,14 +129,15 @@
             </div>
     </div>
 
+
     <!-- Slider Navigation -->
-    <div class="slider-navigation">
+    <!-- <div class="slider-navigation">
         <div class="nav-btn active"></div>
         <div class="nav-btn"></div>
         <div class="nav-btn"></div>
         <div class="nav-btn"></div>
         <div class="nav-btn"></div>
-    </div>
+    </div> -->
     </section>
     </div>
 
@@ -99,6 +148,7 @@
 
             // Toggle dropdown on click
             dropdownTrigger.addEventListener('click', function (e) {
+                e.preventDefault();
                 e.stopPropagation();
                 dropdownContent.classList.toggle('show');
             });
@@ -110,6 +160,25 @@
                         dropdownContent.classList.remove('show');
                     }
                 }
+            });
+            // Search form handling
+            const searchForm = document.getElementById('searchForm');
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const title = document.getElementById('titleSearch').value;
+                const actor = document.getElementById('actorSearch').value;
+                const selectedGenres = Array.from(document.querySelectorAll('input[name="genres"]:checked'))
+                    .map(checkbox => checkbox.value);
+
+                // Create query string
+                const params = new URLSearchParams();
+                if (title) params.append('title', title);
+                if (actor) params.append('actor', actor);
+                selectedGenres.forEach(genre => params.append('genres', genre));
+
+                // Redirect to search results
+                window.location.href = '/search?' + params.toString();
             });
         });
     </script>
