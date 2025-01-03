@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <!-- Header sama seperti dashboard -->
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar sama seperti dashboard -->
+        
+        <main class="main-content">
+            <!-- Top Navigation sama seperti dashboard -->
+            
+            <div class="settings-content">
+                <h2>Settings</h2>
+                
+                <div class="settings-grid">
+                    <!-- Profile Settings -->
+                    <section class="settings-section">
+                        <h3>Profile Settings</h3>
+                        <form class="settings-form" th:action="@{/admin/settings/profile}" method="post">
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" name="username" th:value="${admin.username}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" th:value="${admin.email}" required>
+                            </div>
+                            <button type="submit" class="btn-save">Save Changes</button>
+                        </form>
+                    </section>
+
+                    <!-- Password Settings -->
+                    <section class="settings-section">
+                        <h3>Change Password</h3>
+                        <form class="settings-form" th:action="@{/admin/settings/password}" method="post">
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" name="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" name="newPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" name="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn-save">Change Password</button>
+                        </form>
+                    </section>
+
+                    <!-- System Settings -->
+                    <section class="settings-section">
+                        <h3>System Settings</h3>
+                        <form class="settings-form" th:action="@{/admin/settings/system}" method="post">
+                            <div class="form-group">
+                                <label>Default Rental Duration (days)</label>
+                                <input type="number" name="defaultRentalDuration" 
+                                       th:value="${systemSettings.defaultRentalDuration}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Late Fee (per day)</label>
+                                <input type="number" name="lateFee" step="0.01" 
+                                       th:value="${systemSettings.lateFee}" required>
+                            </div>
+                            <button type="submit" class="btn-save">Save Settings</button>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

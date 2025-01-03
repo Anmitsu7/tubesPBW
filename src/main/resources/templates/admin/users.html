@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Header sama seperti dashboard -->
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar sama seperti dashboard -->
+        
+        <main class="main-content">
+            <div class="page-header">
+                <h2>Active Rentals</h2>
+                <div class="total-count">
+                    Total Active Rentals: <span th:text="${totalActiveRentals}">0</span>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <input type="text" id="searchRental" placeholder="Search rentals...">
+                <select id="filterStatus">
+                    <option value="all">All Status</option>
+                    <option value="normal">Normal</option>
+                    <option value="overdue">Overdue</option>
+                </select>
+            </div>
+
+            <div class="rentals-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Film Title</th>
+                            <th>Rented By</th>
+                            <th>Rental Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="rental : ${activeRentals}">
+                            <td th:text="${rental.filmTitle}">Film Title</td>
+                            <td th:text="${rental.username}">Username</td>
+                            <td th:text="${#temporals.format(rental.tanggalSewa, 'dd-MM-yyyy')}">Rental Date</td>
+                            <td th:text="${#temporals.format(rental.tanggalKembali, 'dd-MM-yyyy')}">Due Date</td>
+                            <td>
+                                <span th:class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
+                                      th:text="${rental.isOverdue ? 'Overdue' : 'Active'}">
+                                    Status
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-return" th:onclick="'processReturn(' + ${rental.id} + ')'">
+                                    <i class="fas fa-undo"></i> Return
+                                </button>
+                                <button class="btn-view" th:onclick="'viewRentalDetails(' + ${rental.id} + ')'">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

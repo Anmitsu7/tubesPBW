@@ -1,13 +1,19 @@
 package com.example.demo.dto;
 
-import com.example.demo.model.User;
+import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
+    private Long id;
     private String username;
-    private String password;
     private String email;
-    private User.UserRole role;
+    private String role;
+    private Boolean isActive;
+    private LocalDateTime lastLoginTime;
 }
