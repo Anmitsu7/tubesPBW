@@ -201,18 +201,7 @@ public class AdminController {
     }
 
     // Users Management
-    @GetMapping("/users")
-    public String showUsersPage(Model model) {
-        try {
-            model.addAttribute("users", userService.getAllUsers());
-            model.addAttribute("totalUsers", userService.getTotalUsers());
-            return "admin/users";
-        } catch (Exception e) {
-            logger.error("Error loading users page", e);
-            return "error/500";
-        }
-    }
-
+  
     // Rentals Management
     @GetMapping("/rentals")
     public String showRentalsPage(Model model) {
@@ -271,18 +260,5 @@ public class AdminController {
         }
     }
 
-    // Settings Management
-    @GetMapping("/settings")
-    public String showSettingsPage(Model model) {
-        try {
-            model.addAttribute("settings", adminService.getAdminSettings());
-            return "admin/settings";
-        } catch (Exception e) {
-            logger.error("Error loading settings page", e);
-            return "error/500";
-        }
-    }
-    
-   
 }
 
