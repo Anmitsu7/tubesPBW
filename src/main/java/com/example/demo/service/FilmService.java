@@ -284,6 +284,8 @@ public class FilmService {
         return films.map(filmMapper::toDto);
     }
 
+    
+
     public boolean isFilmAvailable(Long filmId) {
         Film film = filmRepository.findById(filmId)
             .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));

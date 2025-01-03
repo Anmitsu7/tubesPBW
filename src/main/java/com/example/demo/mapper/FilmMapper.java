@@ -51,6 +51,10 @@ public class FilmMapper {
         dto.setStok(film.getStok());
         dto.setCoverUrl(film.getCoverUrl());
         dto.setGenreId(film.getGenre().getId());
+        dto.setId(film.getId()); // Tambahkan ini di toDto()
+
+        System.out.println("Film ID: " + film.getId() + ", Cover URL: " + film.getCoverUrl());
+
         
         if (film.getActors() != null) {
             dto.setAktorIds(film.getActors().stream()

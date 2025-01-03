@@ -1,222 +1,354 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore Films</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
-  /* Global Styles */
-/* Global Styles */
-/* Global Styles */
-body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #0a1128;
-    color: #ffffff;
-    overflow-x: hidden;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
 
-/* Header */
-.explore-header {
-    text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(135deg, #1d3557, #457b9d);
-    color: white;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    text-transform: uppercase;
-}
+        body {
+            background-color: #0a0d1c;
+            color: #ffffff;
+            min-height: 100vh;
+        }
 
-.explore-header h1 {
-    font-size: 3.5rem;
-    margin-bottom: 10px;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
+        .explore-header {
+            background: linear-gradient(to bottom, rgba(29, 53, 87, 0.95), rgba(10, 13, 28, 0.9));
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-.explore-header p {
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-}
+        .explore-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/path-to-your-background.jpg') center/cover;
+            z-index: -1;
+            filter: blur(5px);
+        }
 
-/* Search Bar Section */
-.filter-section {
-    padding: 30px 20px;
-    text-align: center;
-    background-color: #14213d;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+        .explore-header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
 
-.search-bar-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    align-items: center;
-}
+        .explore-header p {
+            font-size: 1.2em;
+            color: #a8b2d1;
+        }
 
-#search-bar {
-    width: 60%;
-    padding: 12px 15px;
-    font-size: 1rem;
-    border: 2px solid #457b9d;
-    border-radius: 5px;
-    background-color: #1d3557;
-    color: #ffffff;
-    outline: none;
-    transition: all 0.3s ease-in-out;
-}
+        .search-section {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-#search-bar::placeholder {
-    color: #b3b3b3;
-    font-style: italic;
-}
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
 
-#search-bar:focus {
-    border-color: #a8dadc;
-    box-shadow: 0 0 10px rgba(168, 218, 220, 0.8);
-}
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
 
-.btn {
-    padding: 12px 20px;
-    font-size: 1rem;
-    color: #ffffff;
-    background-color: #457b9d;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-transform: uppercase;
-    font-weight: bold;
-    transition: all 0.3s ease-in-out;
-}
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.3);
+        }
 
-.btn:hover {
-    background-color: #a8dadc;
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(168, 218, 220, 0.6);
-}
+        .search-button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            background: #4fc3f7;
+            color: #fff;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-/* Film Section */
-.film-section {
-    padding: 40px 20px;
-    background-color: #0a1128;
-}
+        .search-button:hover {
+            background: #03a9f4;
+            transform: translateY(-2px);
+        }
 
-.film-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
+        .film-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-.film-card {
-    background: #14213d;
-    border-radius: 8px;
-    overflow: hidden;
-    text-align: center;
-    width: 250px;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
+        .film-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
 
-.film-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
-}
+        .film-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(79, 195, 247, 0.2);
+        }
 
-.film-card img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    display: block;
-}
+        .film-cover {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
 
-.film-card h3 {
-    font-size: 1.5rem;
-    margin: 10px 0;
-    color: #ffffff;
-}
+        .film-info {
+            padding: 20px;
+            background: linear-gradient(to top, rgba(10, 13, 28, 0.95), transparent);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transform: translateY(70%);
+            transition: transform 0.3s ease;
+        }
 
-.film-card p {
-    font-size: 0.9rem;
-    color: #b3b3b3;
-    margin: 5px 0;
-}
+        .film-card:hover .film-info {
+            transform: translateY(0);
+        }
 
-.film-card .btn {
-    margin: 15px 0;
-    background-color: #457b9d;
-    box-shadow: 0 5px 10px rgba(168, 218, 220, 0.5);
-}
+        .film-title {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #fff;
+        }
 
-.film-card .btn:hover {
-    background-color: #a8dadc;
-    transform: translateY(-3px);
-}
+        .film-meta {
+            color: #a8b2d1;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
 
-/* Footer */
-.explore-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #14213d;
-    color: #b3b3b3;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.3);
-}
+        .details-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #4fc3f7;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
 
+        .details-button:hover {
+            background: #03a9f4;
+        }
 
+        .explore-footer {
+            text-align: center;
+            padding: 20px;
+            color: #a8b2d1;
+            margin-top: 50px;
+        }
 
+        .filter-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
 
+        .filter-select {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .filter-select option {
+            background: #0a0d1c;
+            color: #fff;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #a8b2d1;
+        }
+
+        .film-grid {
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+
+        .film-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .film-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .film-image {
+            width: 100%;
+            aspect-ratio: 2/3;
+            overflow: hidden;
+        }
+
+        .film-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .film-details {
+            padding: 1rem;
+        }
+
+        .film-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .film-year {
+            font-size: 0.9rem;
+            color: #888;
+            margin: 0.5rem 0;
+        }
+
+        .view-details {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .view-details:hover {
+            background: #0052a3;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
     </style>
 </head>
+
 <body>
     <header class="explore-header">
-        <h1>Explore Films</h1>
-        <p>Search your favorite movies by genre, actor, or title with one click.</p>
+        <h1>EXPLORE FILMS</h1>
+        <p>SEARCH YOUR FAVORITE MOVIES BY GENRE, ACTOR, OR TITLE WITH ONE CLICK.</p>
     </header>
 
-    <section class="filter-section">
-        <form id="search-form">
-            <div class="search-bar-container">
-                <input 
-                    type="text" 
-                    id="search-bar" 
-                    name="search" 
-                    placeholder="Search by genre, actor, or title..." 
-                    autocomplete="off">
-                <button type="submit" class="btn">Search</button>
+    <section class="search-section">
+        <form th:action="@{/explore/search}" method="get">
+            <div class="search-container">
+                <input type="text" name="judul" th:value="${searchJudul}" class="search-input"
+                    placeholder="Search by title...">
+                <button type="submit" class="search-button">SEARCH</button>
+            </div>
+
+            <div class="filter-options">
+                <select name="genreId" class="filter-select">
+                    <option value="">All Genres</option>
+                    <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.nama}"
+                        th:selected="${genre.id == searchGenreId}">
+                    </option>
+                </select>
+
+                <select name="tahunRilis" class="filter-select">
+                    <option value="">Release Year</option>
+                    <option th:each="year : ${#numbers.sequence(2024, 1990)}" th:value="${year}" th:text="${year}"
+                        th:selected="${year == searchTahunRilis}">
+                    </option>
+                </select>
             </div>
         </form>
     </section>
 
-    <section class="film-section">
-        <div class="film-container">
-            <!-- Example Film Card -->
-            <div class="film-card">
-                <img src="placeholder.jpg" alt="Film Cover">
-                <h3>The Last Mission</h3>
-                <p><strong>Genre:</strong> Action</p>
-                <p><strong>Year:</strong> 2023</p>
-                <button class="btn">Details</button>
+    <div class="film-grid">
+        <div th:if="${films != null && !films.empty}" class="grid-container">
+            <div th:each="film : ${films}" class="film-card">
+                <div class="film-image">
+                    <img th:if="${film.coverUrl}" th:src="@{${film.coverUrl}}" class="film-cover"
+                        th:alt="${film.judul}">
+                    <img th:unless="${film.coverUrl}" src="/images/default-cover.jpg" class="film-cover"
+                        alt="Default Cover">
+                </div>
+                <div class="film-details">
+                    <h3 class="film-title" th:text="${film.judul}">Film Title</h3>
+                    <p class="film-year" th:text="${film.tahunRilis}">2024</p>
+                    <a th:href="@{'/films/' + ${film.id}}" class="view-details">View Details</a>
+                </div>
             </div>
-
-            <div class="film-card">
-                <img src="placeholder.jpg" alt="Film Cover">
-                <h3>Love in Jakarta</h3>
-                <p><strong>Genre:</strong> Romance</p>
-                <p><strong>Year:</strong> 2023</p>
-                <button class="btn">Details</button>
-            </div>
-            <!-- More Film Cards -->
         </div>
-    </section>
 
-    <footer class="explore-footer">
-        <p>&copy; 2024 Rental Film. All rights reserved.</p>
-    </footer>
+        <!-- Add this after your film-grid div -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <div class="pagination-controls">
+                <a th:if="${currentPage > 0}"
+                    th:href="@{/explore(page=${currentPage - 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
+                    class="pagination-button">&laquo; Previous</a>
+
+                <span class="pagination-info" th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}">
+                </span>
+
+                <a th:if="${currentPage < totalPages - 1}"
+                    th:href="@{/explore(page=${currentPage + 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
+                    class="pagination-button">Next &raquo;</a>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(films)}" class="no-results">
+            <h3>No films found matching your search criteria</h3>
+            <p>Try adjusting your search filters or browse all films</p>
+        </div>
+
+        <footer class="explore-footer">
+            <p>&copy; 2024 RENTAL FILM. ALL RIGHTS RESERVED.</p>
+        </footer>
 </body>
+
 </html>

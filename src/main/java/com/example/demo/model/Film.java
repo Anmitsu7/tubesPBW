@@ -19,7 +19,7 @@ public class Film {
     @Column(columnDefinition = "TEXT")
     private String deskripsi;
 
-    @Column(name = "tahun_rilis")
+    @Column(name = "tahunrilis")
     private Integer tahunRilis;
 
     @Column(nullable = false)
