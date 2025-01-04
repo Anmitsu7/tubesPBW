@@ -52,6 +52,7 @@
                 <i class="fas fa-search"></i> Search
             </button>
         </div>
+        
 
         <!-- Filter Form -->
         <form id="searchForm" th:action="@{/explore}" method="get">
@@ -110,7 +111,7 @@
                         th:classappend="${film.stok == 0 ? 'disabled' : ''}">
                         View Details
                     </a> -->
-                    <form th:action="@{'/films/' + ${film.id} + '/book'}" method="post" th:classappend="${film.stok == 0 ? 'disabled' : ''}">
+                    <form th:action="@{'/films/' + ${film.id} + '/book'}" method="get" th:classappend="${film.stok == 0 ? 'disabled' : ''}">
                         <input type="hidden" name="duration" value="7" /> <!-- Durasi default, misalnya 7 hari -->
                         <button type="submit" th:disabled="${film.stok == 0}" class="view-details">
                             Book Now

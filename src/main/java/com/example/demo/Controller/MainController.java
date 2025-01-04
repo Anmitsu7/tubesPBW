@@ -372,59 +372,59 @@ public class MainController {
         return "redirect:/home";
     }
 
-    @Autowired
-    private BookingService bookingService;
+    // @Autowired
+    // private BookingService bookingService;
 
-    @GetMapping("/films/{id}/book")
-    public String showBookingPage(@PathVariable Long id, Model model) {
-        try {
-            // Menggunakan getFilmDto untuk mendapatkan detail film
-            FilmDTO film = filmService.getFilmDto(id);
+    // @GetMapping("/films/{id}/book")
+    // public String showBookingPage(@PathVariable Long id, Model model) {
+    //     try {
+    //         // Menggunakan getFilmDto untuk mendapatkan detail film
+    //         FilmDTO film = filmService.getFilmDto(id);
 
-            // Get current logged-in username
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
+    //         // Get current logged-in username
+    //         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //         String username = auth.getName();
 
-            model.addAttribute("film", film);
-            model.addAttribute("username", username);
+    //         model.addAttribute("film", film);
+    //         model.addAttribute("username", username);
 
-            // Optional: Tambahkan informasi tambahan seperti sisa stok
-            boolean alreadyBooked = bookingService.getUserActiveBookings(username).stream()
-                    .anyMatch(booking -> booking.getFilm().getId().equals(id));
-            model.addAttribute("alreadyBooked", alreadyBooked);
+    //         // Optional: Tambahkan informasi tambahan seperti sisa stok
+    //         boolean alreadyBooked = bookingService.getUserActiveBookings(username).stream()
+    //                 .anyMatch(booking -> booking.getFilm().getId().equals(id));
+    //         model.addAttribute("alreadyBooked", alreadyBooked);
 
-            return "bookfilm"; // Mengarahkan ke file bookfilm.html di templates
-        } catch (Exception e) {
-            logger.error("Error loading booking page for film id: " + id, e);
-            return "error/404"; // Jika terjadi error, arahkan ke halaman 404
-        }
-    }
+    //         return "bookfilm"; // Mengarahkan ke file bookfilm.html di templates
+    //     } catch (Exception e) {
+    //         logger.error("Error loading booking page for film id: " + id, e);
+    //         return "error/404"; // Jika terjadi error, arahkan ke halaman 404
+    //     }
+    // }
 
-    @PostMapping("/films/{id}/book/confirm")
-    public String confirmBooking(@PathVariable Long id, @RequestParam int duration) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
+    // @PostMapping("/films/{id}/book/confirm")
+    // public String confirmBooking(@PathVariable Long id, @RequestParam int duration) {
+    //     try {
+    //         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //         String username = auth.getName();
 
-            // Validasi film
-            FilmDTO film = filmService.getFilmDto(id);
-            if (film.getStok() <= 0) {
-                return "redirect:/films/" + id + "/book?error=outofstock";
-            }
+    //         // Validasi film
+    //         FilmDTO film = filmService.getFilmDto(id);
+    //         if (film.getStok() <= 0) {
+    //             return "redirect:/films/" + id + "/book?error=outofstock";
+    //         }
 
-            if (bookingService.isFilmAlreadyBooked(username, id)) {
-                return "redirect:/films/" + id + "/book?error=alreadybooked";
-            }
-            System.out.println("POST request received for film ID: " + id + " with duration: " + duration);
-            // Membuat booking
-            bookingService.createBooking(id, username, duration);
-            return "redirect:/films/" + id + "/book?success=true";
+    //         if (bookingService.isFilmAlreadyBooked(username, id)) {
+    //             return "redirect:/films/" + id + "/book?error=alreadybooked";
+    //         }
+    //         System.out.println("POST request received for film ID: " + id + " with duration: " + duration);
+    //         // Membuat booking
+    //         bookingService.createBooking(id, username, duration);
+    //         return "redirect:/films/" + id + "/book?success=true";
             
-        } catch (Exception e) {
-            logger.error("Error confirming booking for film id: " + id, e);
-            return "redirect:/films/" + id + "/book?error=true";
-        }
-    }
+    //     } catch (Exception e) {
+    //         logger.error("Error confirming booking for film id: " + id, e);
+    //         return "redirect:/films/" + id + "/book?error=true";
+    //     }
+    // }
 
     // -------------------------------------------------------------------------------------------------
 }
