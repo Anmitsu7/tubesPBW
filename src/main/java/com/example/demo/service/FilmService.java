@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,9 @@ import com.example.demo.repository.AktorRepository;
 import com.example.demo.repository.GenreRepository;
 import com.example.demo.repository.PenyewaanRepository;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+
 import com.example.demo.model.Aktor;
 
 import java.nio.file.Files;
@@ -38,22 +42,22 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private static final Logger logger = LoggerFactory.getLogger(FilmService.class);
-    
+
     @Autowired
     private FilmMapper filmMapper;
-    
+
     @Autowired
     private FilmRepository filmRepository;
-    
+
     @Autowired
     private GenreRepository genreRepository;
 
     @Autowired
     private AktorRepository aktorRepository;
-    
+
     @Autowired
     private PenyewaanRepository penyewaanRepository;
-    
+
     @Value("${file.upload.directory}")
     private String uploadDirectory;
 
@@ -62,20 +66,20 @@ public class FilmService {
         try {
             String fileName = StringUtils.cleanPath(coverFile.getOriginalFilename());
             String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
-            
+
             // Save file
             Path uploadPath = Paths.get(uploadDirectory);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
-            
+
             Path filePath = uploadPath.resolve(uniqueFileName);
             Files.copy(coverFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Create film with cover URL
             Film film = filmMapper.toEntity(filmDTO);
             film.setCoverUrl("/covers/" + uniqueFileName);
-            
+
             return filmRepository.save(film);
         } catch (Exception e) {
             throw new RuntimeException("Gagal mengupload cover film", e);
@@ -95,17 +99,17 @@ public class FilmService {
             }
 
             Film film = filmMapper.toEntity(filmDTO);
-            
+
             // Set genre
             Genre genre = genreRepository.findById(filmDTO.getGenreId())
-                .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
             film.setGenre(genre);
-            
+
             // Set actors
             Set<Aktor> actors = new HashSet<>();
             for (Long aktorId : filmDTO.getAktorIds()) {
                 Aktor aktor = aktorRepository.findById(aktorId)
-                    .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan: " + aktorId));
+                        .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan: " + aktorId));
                 actors.add(aktor);
             }
             film.setActors(actors);
@@ -122,7 +126,7 @@ public class FilmService {
     public FilmDTO updateFilm(Long id, FilmDTO filmDTO, MultipartFile coverFile) {
         try {
             Film existingFilm = filmRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
 
             // Handle file upload
             if (coverFile != null && !coverFile.isEmpty()) {
@@ -141,17 +145,17 @@ public class FilmService {
             // Update film data
             Film film = filmMapper.toEntity(filmDTO);
             film.setId(id);
-            
+
             // Update genre
             Genre genre = genreRepository.findById(filmDTO.getGenreId())
-                .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
             film.setGenre(genre);
-            
+
             // Update actors
             Set<Aktor> actors = new HashSet<>();
             for (Long aktorId : filmDTO.getAktorIds()) {
                 Aktor aktor = aktorRepository.findById(aktorId)
-                    .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan: " + aktorId));
+                        .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan: " + aktorId));
                 actors.add(aktor);
             }
             film.setActors(actors);
@@ -167,21 +171,23 @@ public class FilmService {
     @Transactional
     public Film updateFilmWithCover(Long id, FilmDTO filmDTO, MultipartFile coverFile) {
         Film existingFilm = filmRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Film tidak ditemukan"));
+                .orElseThrow(() -> new ResourceNotFoundException("Film tidak ditemukan"));
 
         if (coverFile != null && !coverFile.isEmpty()) {
             try {
                 // Delete old cover file if exists
                 if (existingFilm.getCoverUrl() != null) {
-                    Path oldCoverPath = Paths.get(uploadDirectory, existingFilm.getCoverUrl().substring("/covers/".length()));
+                    Path oldCoverPath = Paths.get(uploadDirectory,
+                            existingFilm.getCoverUrl().substring("/covers/".length()));
                     Files.deleteIfExists(oldCoverPath);
                 }
 
                 // Save new cover
-                String fileName = UUID.randomUUID().toString() + "_" + StringUtils.cleanPath(coverFile.getOriginalFilename());
+                String fileName = UUID.randomUUID().toString() + "_"
+                        + StringUtils.cleanPath(coverFile.getOriginalFilename());
                 Path filePath = Paths.get(uploadDirectory).resolve(fileName);
                 Files.copy(coverFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                
+
                 filmDTO.setCoverUrl("/covers/" + fileName);
             } catch (Exception e) {
                 throw new RuntimeException("Gagal mengupdate cover film", e);
@@ -196,35 +202,35 @@ public class FilmService {
     @Transactional
     public void updateStok(Long filmId, Integer newStok) {
         Film film = filmRepository.findById(filmId)
-            .orElseThrow(() -> new ResourceNotFoundException("Film tidak ditemukan"));
+                .orElseThrow(() -> new ResourceNotFoundException("Film tidak ditemukan"));
         film.setStok(newStok);
         filmRepository.save(film);
     }
 
     public List<FilmDTO> getLowStockFilms(int threshold) {
         return filmRepository.findByStokLessThan(threshold).stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
     }
-    
+
     public FilmDTO getFilmDto(Long id) {
         Film film = filmRepository.findById(id)
-            .orElseThrow(() -> {
-                logger.warn("Film not found with id: {}", id);
-                return new RuntimeException("Film tidak ditemukan");
-            });
+                .orElseThrow(() -> {
+                    logger.warn("Film not found with id: {}", id);
+                    return new RuntimeException("Film tidak ditemukan");
+                });
         return filmMapper.toDto(film);
     }
-    
+
     @Transactional
     public Film updateFilm(Long id, FilmDTO filmDTO) {
         try {
             Film existingFilm = filmRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
-            
+                    .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
+
             Film updatedFilm = filmMapper.toEntity(filmDTO);
             updatedFilm.setId(existingFilm.getId());
-            
+
             logger.info("Updating film with id: {}", id);
             return filmRepository.save(updatedFilm);
         } catch (Exception e) {
@@ -232,7 +238,7 @@ public class FilmService {
             throw new RuntimeException("Gagal mengupdate film", e);
         }
     }
-    
+
     @Transactional
     public void deleteFilm(Long id) {
         try {
@@ -243,65 +249,63 @@ public class FilmService {
             throw new RuntimeException("Gagal menghapus film", e);
         }
     }
-    
+
     // Query Operations
     public List<FilmDTO> getAllFilms() {
         return filmRepository.findAll().stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
     }
-    
+
     public List<FilmDTO> getLatestFilms() {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("tahunRilis").descending());
         Page<Film> latestFilms = filmRepository.findAll(pageable);
         return latestFilms.getContent().stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
-    }
-    
-    public List<FilmDTO> getPopularFilms() {
-        return filmRepository.findMostRentedFilms(PageRequest.of(0, 10))
-            .stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
-    }
-    
-    public List<FilmDTO> getFilmsByGenre(Long genreId) {
-        return filmRepository.findByGenreId(genreId).stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
-    }
-    
-    public List<FilmDTO> searchFilms(String keyword) {
-        return filmRepository.findByJudulContainingIgnoreCase(keyword).stream()
-            .map(filmMapper::toDto)
-            .collect(Collectors.toList());
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Page<FilmDTO> searchFilmsAdvanced(String judul, Long genreId, Integer tahunRilis, 
-                                           Boolean available, Pageable pageable) {
+    public List<FilmDTO> getPopularFilms() {
+        return filmRepository.findMostRentedFilms(PageRequest.of(0, 10))
+                .stream()
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDTO> getFilmsByGenre(Long genreId) {
+        return filmRepository.findByGenreId(genreId).stream()
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<FilmDTO> searchFilms(String keyword) {
+        return filmRepository.findByJudulContainingIgnoreCase(keyword).stream()
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public Page<FilmDTO> searchFilmsAdvanced(String judul, Long genreId, Integer tahunRilis,
+            Boolean available, Pageable pageable) {
         Page<Film> films = filmRepository.searchFilms(judul, genreId, tahunRilis, available, pageable);
         return films.map(filmMapper::toDto);
     }
 
-    
-
     public boolean isFilmAvailable(Long filmId) {
         Film film = filmRepository.findById(filmId)
-            .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
-        
+                .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
+
         Long activeRentals = penyewaanRepository.countByFilmIdAndStatus(filmId, "DISEWA");
         return film.getStok() > activeRentals;
     }
-    
+
     public List<Genre> getAllGenres() {
         return genreRepository.findAll();
     }
-    
+
     public long getTotalFilms() {
         return filmRepository.count();
     }
-    
+
     public long getAvailableFilms() {
         return filmRepository.countByStokGreaterThan(0);
     }
@@ -318,13 +322,13 @@ public class FilmService {
     public List<Map<String, Object>> getFilmRentalStatistics(LocalDate startDate, LocalDate endDate) {
         List<Object[]> stats = filmRepository.getFilmRentalStats(startDate, endDate);
         return stats.stream()
-            .map(arr -> {
-                Map<String, Object> map = new HashMap<>();
-                map.put("film", arr[0]);
-                map.put("rentalCount", arr[1]);
-                return map;
-            })
-            .collect(Collectors.toList());
+                .map(arr -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("film", arr[0]);
+                    map.put("rentalCount", arr[1]);
+                    return map;
+                })
+                .collect(Collectors.toList());
     }
 
     private void validateFilmDTO(FilmDTO filmDTO) {
@@ -367,7 +371,7 @@ public class FilmService {
     public GenreDTO updateGenre(Long id, GenreDTO genreDTO) {
         try {
             Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
             genre.setNama(genreDTO.getNama());
             Genre updatedGenre = genreRepository.save(genre);
             return new GenreDTO(updatedGenre.getId(), updatedGenre.getNama());
@@ -392,15 +396,15 @@ public class FilmService {
 
     public List<AktorDTO> getAllActors() {
         return aktorRepository.findAll().stream()
-            .map(aktor -> {
-                AktorDTO dto = new AktorDTO();
-                dto.setId(aktor.getId());
-                dto.setNama(aktor.getNama());
-                dto.setNegaraAsal(aktor.getNegaraAsal());
-                dto.setFotoUrl(aktor.getFotoUrl());
-                return dto;
-            })
-            .collect(Collectors.toList());
+                .map(aktor -> {
+                    AktorDTO dto = new AktorDTO();
+                    dto.setId(aktor.getId());
+                    dto.setNama(aktor.getNama());
+                    dto.setNegaraAsal(aktor.getNegaraAsal());
+                    dto.setFotoUrl(aktor.getFotoUrl());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -421,8 +425,8 @@ public class FilmService {
             aktor.setFotoUrl(aktorDTO.getFotoUrl());
 
             Aktor savedAktor = aktorRepository.save(aktor);
-            return new AktorDTO(savedAktor.getId(), savedAktor.getNama(), 
-                              savedAktor.getNegaraAsal(), savedAktor.getFotoUrl());
+            return new AktorDTO(savedAktor.getId(), savedAktor.getNama(),
+                    savedAktor.getNegaraAsal(), savedAktor.getFotoUrl());
         } catch (Exception e) {
             logger.error("Error adding actor: {}", e.getMessage());
             throw new RuntimeException("Gagal menambah aktor", e);
@@ -433,7 +437,7 @@ public class FilmService {
     public AktorDTO updateActor(Long id, AktorDTO aktorDTO, MultipartFile photo) {
         try {
             Aktor aktor = aktorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan"));
 
             // Handle photo upload
             if (photo != null && !photo.isEmpty()) {
@@ -454,7 +458,7 @@ public class FilmService {
 
             Aktor updatedAktor = aktorRepository.save(aktor);
             return new AktorDTO(updatedAktor.getId(), updatedAktor.getNama(),
-                              updatedAktor.getNegaraAsal(), updatedAktor.getFotoUrl());
+                    updatedAktor.getNegaraAsal(), updatedAktor.getFotoUrl());
         } catch (Exception e) {
             logger.error("Error updating actor: {}", e.getMessage());
             throw new RuntimeException("Gagal mengupdate aktor", e);
@@ -465,7 +469,7 @@ public class FilmService {
     public void deleteActor(Long id) {
         try {
             Aktor aktor = aktorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan"));
+                    .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan"));
 
             // Delete photo if exists
             if (aktor.getFotoUrl() != null) {
@@ -478,5 +482,38 @@ public class FilmService {
             logger.error("Error deleting actor: {}", e.getMessage());
             throw new RuntimeException("Gagal menghapus aktor", e);
         }
+    }
+
+    public Page<Film> findFilmsWithFilters(String judul,
+            List<Long> genreIds,
+            List<Long> aktorIds,
+            Integer tahunRilis,
+            Pageable pageable) {
+
+        Specification<Film> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (judul != null && !judul.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("judul")),
+                        "%" + judul.toLowerCase() + "%"));
+            }
+
+            if (genreIds != null && !genreIds.isEmpty()) {
+                predicates.add(root.get("genre").get("id").in(genreIds));
+            }
+
+            if (aktorIds != null && !aktorIds.isEmpty()) {
+                Join<Film, Aktor> aktorJoin = root.join("actors");
+                predicates.add(aktorJoin.get("id").in(aktorIds));
+            }
+
+            if (tahunRilis != null) {
+                predicates.add(cb.equal(root.get("tahunRilis"), tahunRilis));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return filmRepository.findAll(spec, pageable);
     }
 }

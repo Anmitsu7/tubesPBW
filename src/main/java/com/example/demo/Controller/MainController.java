@@ -2,15 +2,18 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
+import com.example.demo.model.Film;
 import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import com.example.demo.service.FilmService;
 import jakarta.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,7 +21,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
+
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.Predicate;
 
 @Controller
 public class MainController {
@@ -52,32 +62,45 @@ public class MainController {
     }
 
     @GetMapping("/explore")
-    public String explore(Model model, Authentication authentication) {
+    public String showExplore(Model model,
+            @RequestParam(required = false) String judul,
+            @RequestParam(required = false) List<Long> genreIds,
+            @RequestParam(required = false) List<Long> aktorIds, 
+            @RequestParam(required = false) Integer tahunRilis,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
         try {
-            if (authentication != null) {
-                model.addAttribute("username", authentication.getName());
-                model.addAttribute("role", authentication.getAuthorities().toString());
-            }
+            // Get username
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            model.addAttribute("username", auth.getName());
 
-            model.addAttribute("films", filmService.getAllFilms());
+            // Get films with filters
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Film> filmPage = filmService.findFilmsWithFilters(judul, genreIds, aktorIds, tahunRilis, pageable);
+
+            // Add to model
+            model.addAttribute("films", filmPage.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", filmPage.getTotalPages());
+            model.addAttribute("totalItems", filmPage.getTotalElements());
+
+            // Add search parameters
+            model.addAttribute("searchJudul", judul);
+            model.addAttribute("searchGenreIds", genreIds);
+            model.addAttribute("searchAktorIds", aktorIds);
+            model.addAttribute("searchTahunRilis", tahunRilis);
+
+            // Add filter options
             model.addAttribute("genres", filmService.getAllGenres());
+            model.addAttribute("aktors", filmService.getAllActors());
+
             return "explore";
         } catch (Exception e) {
-            logger.error("Error loading explore page", e);
-            return "error/500";
+            logger.error("Error in showExplore", e);
+            throw new RuntimeException("Failed to load explore page", e);
         }
     }
 
-    @GetMapping("/about")
-    public String about(Model model, Authentication authentication) {
-        if (authentication != null) {
-            model.addAttribute("username", authentication.getName());
-            model.addAttribute("role", authentication.getAuthorities().toString());
-        }
-        return "about";
-    }
-
-    
     @GetMapping("/login")
     public String loginPage(Model model, Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
@@ -100,7 +123,7 @@ public class MainController {
                 // Cek role user
                 Map<String, Object> userData = authResult.get();
                 String role = (String) userData.get("role");
-                
+
                 // Redirect berdasarkan role
                 if ("ADMIN".equals(role)) {
                     return "redirect:/admin/dashboard";
@@ -136,30 +159,30 @@ public class MainController {
             // Validasi username dan email yang sudah ada
             if (userService.existsByUsername(registerRequest.getUsername())) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Username sudah digunakan"));
+                        .body(Map.of("message", "Username sudah digunakan"));
             }
             if (userService.existsByEmail(registerRequest.getEmail())) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Email sudah digunakan"));
+                        .body(Map.of("message", "Email sudah digunakan"));
             }
 
             // Validasi password match
             if (!registerRequest.getPassword().equals(registerRequest.getPasswordConfirm())) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("message", "Password tidak cocok"));
+                        .body(Map.of("message", "Password tidak cocok"));
             }
 
             // Register user
             User savedUser = userService.registerUser(registerRequest);
-            
+
             logger.info("Successfully registered user with id: {}", savedUser.getId());
             return ResponseEntity.ok()
-                .body(Map.of("message", "Registrasi berhasil"));
+                    .body(Map.of("message", "Registrasi berhasil"));
 
         } catch (Exception e) {
             logger.error("Registration error: ", e);
             return ResponseEntity.internalServerError()
-                .body(Map.of("message", "Terjadi kesalahan saat registrasi: " + e.getMessage()));
+                    .body(Map.of("message", "Terjadi kesalahan saat registrasi: " + e.getMessage()));
         }
     }
 
@@ -167,9 +190,9 @@ public class MainController {
     public String registerForm(@Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
             BindingResult result,
             Model model) {
-        
+
         logger.info("Processing form registration for username: {}", registerRequest.getUsername());
-        
+
         if (result.hasErrors()) {
             return "register";
         }
@@ -284,8 +307,5 @@ public class MainController {
         return "redirect:/home";
     }
 
-
-
-    
-//-------------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
 }

@@ -10,13 +10,13 @@
 </head>
 
 <body>
+    <!-- Navigation -->
     <nav class="navigation">
         <div class="navigation-items">
             <a href="/homepage-authenticated" class="brand">Rent Film</a>
 
             <div class="nav-links">
                 <a href="/homepage-authenticated">Home</a>
-                <a href="/about">About us</a>
                 <a href="/explore" class="active">Explore</a>
             </div>
 
@@ -34,102 +34,188 @@
         </div>
     </nav>
 
-    <!-- Header section -->
+    <!-- Header -->
     <header class="explore-header">
         <h1>EXPLORE FILMS</h1>
         <p>SEARCH YOUR FAVORITE MOVIES BY GENRE, ACTOR, OR TITLE WITH ONE CLICK.</p>
     </header>
 
-    <!-- Search section -->
+    <!-- Update bagian Search Section -->
     <section class="search-section">
-        <form th:action="@{/explore/search}" method="get">
-            <div class="search-container">
-                <input type="text" name="judul" th:value="${searchJudul}" class="search-input"
-                    placeholder="Search by title...">
-                <button type="submit" class="search-button">SEARCH</button>
-            </div>
+        <!-- Basic Search -->
+        <div class="basic-search">
+            <input type="text" class="search-input" placeholder="Search film title...">
+            <button type="button" id="filterToggleBtn" class="filter-toggle-button">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+            <button type="submit" class="search-button" form="searchForm">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
 
-            <div class="filter-options">
-                <select name="genreId" class="filter-select">
-                    <option value="">All Genres</option>
-                    <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.nama}"
-                        th:selected="${genre.id == searchGenreId}"></option>
-                </select>
+        <!-- Filter Form -->
+        <form id="searchForm" th:action="@{/explore}" method="get">
+            <input type="hidden" id="mainSearchInput" name="judul">
 
-                <select name="tahunRilis" class="filter-select">
-                    <option value="">Release Year</option>
-                    <option th:each="year : ${#numbers.sequence(2024, 1990)}" th:value="${year}" th:text="${year}"
-                        th:selected="${year == searchTahunRilis}"></option>
-                </select>
+            <!-- Filter Panel -->
+            <div id="filterPanel" class="filter-panel">
+                <!-- Genre Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Genres</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item" th:each="genre : ${genres}">
+                            <input type="checkbox" th:id="'genre-' + ${genre.id}" name="genreIds" th:value="${genre.id}"
+                                class="filter-checkbox">
+                            <label th:for="'genre-' + ${genre.id}" th:text="${genre.nama}"
+                                class="checkbox-label"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actor Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Actors</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item" th:each="aktor : ${aktors}">
+                            <input type="checkbox" th:id="'aktor-' + ${aktor.id}" name="aktorIds" th:value="${aktor.id}"
+                                class="filter-checkbox">
+                            <label th:for="'aktor-' + ${aktor.id}" th:text="${aktor.nama}"
+                                class="checkbox-label"></label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </section>
 
-    <!-- Film grid -->
+    <!-- Film Grid -->
     <div class="film-grid">
         <div th:if="${films != null && !films.empty}" class="grid-container">
-            <div th:each="film : ${films}" class="film-card">
+            <div th:each="film : ${films}" class="film-card" th:classappend="${film.stok == 0 ? 'out-of-stock' : ''}">
                 <div class="film-image">
-                    <!-- Ubah path cover -->
                     <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}" class="film-cover"
                         onerror="this.src='/images/default-cover.jpg'">
+                    <div th:if="${film.stok == 0}" class="out-of-stock-label">
+                        OUT OF STOCK
+                    </div>
                 </div>
                 <div class="film-details">
                     <h3 class="film-title" th:text="${film.judul}">Film Title</h3>
                     <p class="film-year" th:text="${film.tahunRilis}">2024</p>
-                    <a th:href="@{'/films/' + ${film.id}}" class="view-details">View Details</a>
+                    <p class="stock-status" th:classappend="${film.stok == 0 ? 'no-stock' : 'in-stock'}">
+                        <span th:if="${film.stok > 0}" th:text="'Stock: ' + ${film.stok}">Stock: 5</span>
+                        <span th:if="${film.stok == 0}">Out of Stock</span>
+                    </p>
+                    <a th:href="@{'/films/' + ${film.id}}" class="view-details"
+                        th:classappend="${film.stok == 0 ? 'disabled' : ''}">
+                        View Details
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Pagination -->
-    <div class="pagination" th:if="${totalPages > 1}">
-        <div class="pagination-controls">
-            <a th:if="${currentPage > 0}"
-                th:href="@{/explore(page=${currentPage - 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
-                class="pagination-button">&laquo; Previous</a>
-            <span class="pagination-info" th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
-            <a th:if="${currentPage < totalPages - 1}"
-                th:href="@{/explore(page=${currentPage + 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
-                class="pagination-button">Next &raquo;</a>
+        <!-- Pagination -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <div class="pagination-controls">
+                <a th:if="${currentPage > 0}"
+                    th:href="@{/explore(page=${currentPage - 1}, size=12, judul=${searchJudul}, genreIds=${searchGenreIds}, aktorIds=${searchAktorIds})}"
+                    class="pagination-button">&laquo; Previous</a>
+
+                <span class="pagination-info" th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+
+                <a th:if="${currentPage < totalPages - 1}"
+                    th:href="@{/explore(page=${currentPage + 1}, size=12, judul=${searchJudul}, genreIds=${searchGenreIds}, aktorIds=${searchAktorIds})}"
+                    class="pagination-button">Next &raquo;</a>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div th:if="${#lists.isEmpty(films)}" class="no-results">
+            <h3>No films found matching your search criteria</h3>
+            <p>Try adjusting your search filters or browse all films</p>
         </div>
     </div>
 
-    <!-- No results message -->
-    <div th:if="${#lists.isEmpty(films)}" class="no-results">
-        <h3>No films found matching your search criteria</h3>
-        <p>Try adjusting your search filters or browse all films</p>
-    </div>
-    </div>
-
+    <!-- Footer -->
     <footer class="explore-footer">
         <p>&copy; 2024 RENTAL FILM. ALL RIGHTS RESERVED.</p>
     </footer>
 
+    // Script yang ditambahkan sebelum closing body tag
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const dropdownTrigger = document.querySelector('.dropdown-trigger');
-            const dropdownContent = document.getElementById('dropdownContent');
+            const filterToggleBtn = document.getElementById('filterToggleBtn');
+            const filterPanel = document.getElementById('filterPanel');
+            const mainSearch = document.querySelector('.search-input');
+            const hiddenSearch = document.getElementById('mainSearchInput');
 
-            // Toggle dropdown on click
+            if (filterToggleBtn && filterPanel) {
+                filterToggleBtn.addEventListener('click', function () {
+                    if (filterPanel.style.display === 'none' || !filterPanel.style.display) {
+                        filterPanel.style.display = 'block';
+                        this.innerHTML = '<i class="fas fa-times"></i> Close Filters';
+                    } else {
+                        filterPanel.style.display = 'none';
+                        this.innerHTML = '<i class="fas fa-filter"></i> Filters';
+                    }
+                });
+            }
+
+            // Sync search inputs
+            if (mainSearch && hiddenSearch) {
+                mainSearch.addEventListener('input', function () {
+                    hiddenSearch.value = this.value;
+                });
+            }
+
+            // Close filter when clicking outside
+            document.addEventListener('click', function (e) {
+                if (filterPanel && filterToggleBtn) {
+                    if (!filterPanel.contains(e.target) &&
+                        !filterToggleBtn.contains(e.target) &&
+                        filterPanel.style.display === 'block') {
+                        filterPanel.style.display = 'none';
+                        filterToggleBtn.innerHTML = '<i class="fas fa-filter"></i> Filters';
+                    }
+                }
+            });
+        });
+
+        // User dropdown
+        const dropdownTrigger = document.querySelector('.dropdown-trigger');
+        const dropdownContent = document.getElementById('dropdownContent');
+
+        if (dropdownTrigger && dropdownContent) {
             dropdownTrigger.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 dropdownContent.classList.toggle('show');
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', function (e) {
-                if (!e.target.matches('.dropdown-trigger')) {
-                    if (dropdownContent.classList.contains('show')) {
-                        dropdownContent.classList.remove('show');
-                    }
+                if (!dropdownTrigger.contains(e.target)) {
+                    dropdownContent.classList.remove('show');
                 }
             });
+        }
+
+        // Form submission handler
+        const searchForm = document.getElementById('searchForm');
+        searchForm.addEventListener('submit', function (e) {
+            // Optional: Add any form validation here
+            const selectedFilters = {
+                genres: Array.from(document.querySelectorAll('input[name="genreIds"]:checked'))
+                    .map(cb => cb.value),
+                actors: Array.from(document.querySelectorAll('input[name="aktorIds"]:checked'))
+                    .map(cb => cb.value),
+                years: Array.from(document.querySelectorAll('input[name="years"]:checked'))
+                    .map(cb => cb.value)
+            };
+
+            // You can handle the selected filters here if needed
+            console.log('Selected filters:', selectedFilters);
         });
     </script>
-
 </body>
 
 </html>
