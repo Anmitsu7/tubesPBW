@@ -1,21 +1,26 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.FilmDTO;
-import com.example.demo.dto.GenreDTO;
-import com.example.demo.dto.AktorDTO;
-import com.example.demo.service.AdminService;
-import com.example.demo.service.FilmService;
-import com.example.demo.service.UserService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.ResponseEntity;
+
+import com.example.demo.dto.AktorDTO;
+import com.example.demo.dto.FilmDTO;
+import com.example.demo.dto.GenreDTO;
+import com.example.demo.service.AdminService;
+import com.example.demo.service.FilmService;
+import com.example.demo.service.UserService;
 
 @Controller
 @RequestMapping("/admin")
@@ -196,18 +201,7 @@ public class AdminController {
     }
 
     // Users Management
-    @GetMapping("/users")
-    public String showUsersPage(Model model) {
-        try {
-            model.addAttribute("users", userService.getAllUsers());
-            model.addAttribute("totalUsers", userService.getTotalUsers());
-            return "admin/users";
-        } catch (Exception e) {
-            logger.error("Error loading users page", e);
-            return "error/500";
-        }
-    }
-
+  
     // Rentals Management
     @GetMapping("/rentals")
     public String showRentalsPage(Model model) {
@@ -266,15 +260,5 @@ public class AdminController {
         }
     }
 
-    // Settings Management
-    @GetMapping("/settings")
-    public String showSettingsPage(Model model) {
-        try {
-            model.addAttribute("settings", adminService.getAdminSettings());
-            return "admin/settings";
-        } catch (Exception e) {
-            logger.error("Error loading settings page", e);
-            return "error/500";
-        }
-    }
 }
+

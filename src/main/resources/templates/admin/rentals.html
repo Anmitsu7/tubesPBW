@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Rentals - ReelRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --text-light: #ecf0f1;
+            --text-dark: #2c3e50;
+            --background-light: #f5f6fa;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-light);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            position: fixed;
+            height: 100vh;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .nav-links .active a {
+            background-color: var(--accent-color);
+        }
+
+        .nav-links i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .total-count {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-section input,
+        .filter-section select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .filter-section input {
+            flex: 1;
+        }
+
+        .rentals-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-active, .status-overdue {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-overdue {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+        }
+
+        .btn-return, .btn-view {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            margin-right: 0.5rem;
+        }
+
+        .btn-return {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-view {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-return:hover, .btn-view:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .sidebar span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>ReelRental Admin</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+            <li><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
+        
+            <li class="active"><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
+            <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
+            <li><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
+            <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
+          
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2>Active Rentals</h2>
+            <div class="total-count">
+                Total Active Rentals: <span th:text="${totalActiveRentals}">0</span>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <input type="text" id="searchRental" placeholder="Search by film title or username...">
+            <select id="filterStatus">
+                <option value="all">All Status</option>
+                <option value="normal">Normal</option>
+                <option value="overdue">Overdue</option>
+            </select>
+        </div>
+
+        <div class="rentals-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Film Title</th>
+                        <th>Rented By</th>
+                        <th>Rental Date</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="rental : ${activeRentals}">
+                        <td th:text="${rental.filmTitle}">Film Title</td>
+                        <td th:text="${rental.username}">Username</td>
+                        <td th:text="${#temporals.format(rental.tanggalSewa, 'dd-MM-yyyy')}">Rental Date</td>
+                        <td th:text="${#temporals.format(rental.tanggalKembali, 'dd-MM-yyyy')}">Due Date</td>
+                        <td>
+                            <span th:class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
+                                  th:text="${rental.isOverdue ? 'Overdue' : 'Active'}">
+                                Status
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-return" th:onclick="'processReturn(' + ${rental.id} + ')'">
+                                <i class="fas fa-undo"></i> Return
+                            </button>
+                            <button class="btn-view" th:onclick="'viewRentalDetails(' + ${rental.id} + ')'">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchRental').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const title = row.cells[0].textContent.toLowerCase();
+                const username = row.cells[1].textContent.toLowerCase();
+                const visible = title.includes(searchTerm) || username.includes(searchTerm);
+                row.style.display = visible ? '' : 'none';
+            });
+        });
+
+        // Filter by status
+        document.getElementById('filterStatus').addEventListener('change', function(e) {
+            const status = e.target.value;
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const statusCell = row.cells[4].textContent.trim().toLowerCase();
+                if (status === 'all' || statusCell === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Process return function (to be implemented)
+        function processReturn(rentalId) {
+            if (confirm('Are you sure you want to process this return?')) {
+                // Implement return logic here
+                console.log('Processing return for rental:', rentalId);
+            }
+        }
+
+        // View rental details function (to be implemented)
+        function viewRentalDetails(rentalId) {
+            // Implement view details logic here
+            console.log('Viewing details for rental:', rentalId);
+        }
+    </script>
+</body>
+</html>

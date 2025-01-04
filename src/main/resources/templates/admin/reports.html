@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - ReelRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #2D3743;
+            --sidebar-hover: #3A4956;
+            --active-bg: #3498db;
+            --text-color: #FFFFFF;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-links li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-links li a:hover {
+            background-color: var(--sidebar-hover);
+        }
+
+        .nav-links li.active a {
+            background-color: var(--active-bg);
+        }
+
+        .nav-links li i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        td, th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            ReelRental<br>Admin
+        </div>
+        <ul class="nav-links">
+            <li><a href="/admin/dashboard"><i class="fas fa-home"></i>Dashboard</a></li>
+            <li><a href="/admin/films"><i class="fas fa-film"></i>Films</a></li>
+            <li><a href="/admin/rentals"><i class="fas fa-receipt"></i>Rentals</a></li>
+            <li><a href="/admin/genres"><i class="fas fa-tags"></i>Genres</a></li>
+            <li><a href="/admin/actors"><i class="fas fa-user"></i>Actors</a></li>
+            <li class="active"><a href="/admin/reports"><i class="fas fa-chart-bar"></i>Reports</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold mb-6">Rental Statistics & Reports</h1>
+            
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="card p-4">
+                    <h3 class="text-gray-600 text-sm">Total Rentals</h3>
+                    <p class="text-2xl font-bold mt-2" id="totalRentals">-</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-gray-600 text-sm">Average Duration</h3>
+                    <p class="text-2xl font-bold mt-2" id="avgDuration">-</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-gray-600 text-sm">Return Rate</h3>
+                    <p class="text-2xl font-bold mt-2" id="returnRate">-</p>
+                </div>
+                <div class="card p-4">
+                    <h3 class="text-gray-600 text-sm">Most Popular Genre</h3>
+                    <p class="text-2xl font-bold mt-2" id="popularGenre">-</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="card p-4">
+                    <h2 class="text-lg font-bold mb-4">Monthly Rentals</h2>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card p-4">
+                    <h2 class="text-lg font-bold mb-4">Genre Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="genreChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-4">
+                    <h2 class="text-lg font-bold mb-4">Top Rented Films</h2>
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th class="text-center">Rentals</th>
+                                    <th class="text-center">Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topFilmsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <h2 class="text-lg font-bold mb-4">Stock Alerts</h2>
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th class="text-center">Available</th>
+                                    <th class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockAlertsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // All the JavaScript remains the same as before, just updating some styling values
+        async function loadTopFilms() {
+            const response = await fetch('/api/admin/statistics/top-films');
+            const data = await response.json();
+            
+            const tbody = document.getElementById('topFilmsTable');
+            tbody.innerHTML = data.map(film => `
+                <tr>
+                    <td>${film.judul}</td>
+                    <td class="text-center">${film.totalRentals}</td>
+                    <td class="text-center">${film.currentStock}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadStockAlerts() {
+            const response = await fetch('/api/admin/statistics/stock-alerts');
+            const data = await response.json();
+            
+            const tbody = document.getElementById('stockAlertsTable');
+            tbody.innerHTML = data.map(film => `
+                <tr>
+                    <td>${film.judul}</td>
+                    <td class="text-center">${film.availableStock}</td>
+                    <td class="text-center">${film.totalStock}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Rest of the JavaScript code remains the same
+        // ... (loadSummary, loadMonthlyChart, loadGenreChart, initDashboard functions)
+    </script>
+</body>
+</html>

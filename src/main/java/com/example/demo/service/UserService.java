@@ -1,11 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.model.User;
-import com.example.demo.model.Penyewaan;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.repository.PenyewaanRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
-
-import java.time.LocalDateTime;
-import java.util.*;
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.model.Penyewaan;
+import com.example.demo.model.User;
+import com.example.demo.repository.PenyewaanRepository;
+import com.example.demo.repository.UserRepository;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -387,5 +392,13 @@ public class UserService implements UserDetailsService {
     private String generateTemporaryPassword() {
         // Generate a random 10-character password
         return UUID.randomUUID().toString().substring(0, 10);
+    }
+    public List<User> getRecentLogins() {
+        return userRepository.findRecentLogins();
+    }
+    
+    public User findById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
     }
 }
