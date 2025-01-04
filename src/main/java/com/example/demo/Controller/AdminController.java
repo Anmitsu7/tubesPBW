@@ -45,13 +45,19 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         try {
+
+            
             // Get current logged in username
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             model.addAttribute("username", username);
 
+            
+
             // Add dashboard data
+            logger.debug("Getting total films...");
             model.addAttribute("totalFilms", filmService.getTotalFilms());
+            logger.debug("Getting total active users...");
             model.addAttribute("totalActiveUsers", userService.getTotalActiveUsers());
             model.addAttribute("totalActiveRentals", adminService.getTotalActiveRentals());
             model.addAttribute("latestFilms", filmService.getLatestFilms());

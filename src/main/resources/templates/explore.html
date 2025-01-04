@@ -106,10 +106,17 @@
                         <span th:if="${film.stok > 0}" th:text="'Stock: ' + ${film.stok}">Stock: 5</span>
                         <span th:if="${film.stok == 0}">Out of Stock</span>
                     </p>
-                    <a th:href="@{'/films/' + ${film.id}}" class="view-details"
+                    <!-- <a th:href="@{'/films/' + ${film.id}}" class="view-details"
                         th:classappend="${film.stok == 0 ? 'disabled' : ''}">
                         View Details
-                    </a>
+                    </a> -->
+                    <form th:action="@{'/films/' + ${film.id} + '/book'}" method="post" th:classappend="${film.stok == 0 ? 'disabled' : ''}">
+                        <input type="hidden" name="duration" value="7" /> <!-- Durasi default, misalnya 7 hari -->
+                        <button type="submit" th:disabled="${film.stok == 0}" class="view-details">
+                            Book Now
+                        </button>
+                    </form>
+                    
                 </div>
             </div>
         </div>

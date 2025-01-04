@@ -1,10 +1,13 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.FilmDTO;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.model.Film;
 import com.example.demo.model.User;
+import com.example.demo.repository.BookingRepository;
 import com.example.demo.service.UserService;
+import com.example.demo.service.BookingService;
 import com.example.demo.service.FilmService;
 import jakarta.validation.Valid;
 
@@ -23,7 +26,6 @@ import java.util.Optional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,7 +67,7 @@ public class MainController {
     public String showExplore(Model model,
             @RequestParam(required = false) String judul,
             @RequestParam(required = false) List<Long> genreIds,
-            @RequestParam(required = false) List<Long> aktorIds, 
+            @RequestParam(required = false) List<Long> aktorIds,
             @RequestParam(required = false) Integer tahunRilis,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
@@ -305,6 +307,60 @@ public class MainController {
             return "redirect:/admin/dashboard";
         }
         return "redirect:/home";
+    }
+
+    @Autowired
+    private BookingService bookingService;
+
+    @GetMapping("/films/{id}/book")
+    public String showBookingPage(@PathVariable Long id, Model model) {
+        try {
+            // Menggunakan getFilmDto untuk mendapatkan detail film
+            FilmDTO film = filmService.getFilmDto(id);
+
+            // Get current logged-in username
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+
+            model.addAttribute("film", film);
+            model.addAttribute("username", username);
+
+            // Optional: Tambahkan informasi tambahan seperti sisa stok
+            boolean alreadyBooked = bookingService.getUserActiveBookings(username).stream()
+                    .anyMatch(booking -> booking.getFilm().getId().equals(id));
+            model.addAttribute("alreadyBooked", alreadyBooked);
+
+            return "bookfilm"; // Mengarahkan ke file bookfilm.html di templates
+        } catch (Exception e) {
+            logger.error("Error loading booking page for film id: " + id, e);
+            return "error/404"; // Jika terjadi error, arahkan ke halaman 404
+        }
+    }
+
+    @PostMapping("/films/{id}/book/confirm")
+    public String confirmBooking(@PathVariable Long id, @RequestParam int duration) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+
+            // Validasi film
+            FilmDTO film = filmService.getFilmDto(id);
+            if (film.getStok() <= 0) {
+                return "redirect:/films/" + id + "/book?error=outofstock";
+            }
+
+            if (bookingService.isFilmAlreadyBooked(username, id)) {
+                return "redirect:/films/" + id + "/book?error=alreadybooked";
+            }
+            System.out.println("POST request received for film ID: " + id + " with duration: " + duration);
+            // Membuat booking
+            bookingService.createBooking(id, username, duration);
+            return "redirect:/films/" + id + "/book?success=true";
+            
+        } catch (Exception e) {
+            logger.error("Error confirming booking for film id: " + id, e);
+            return "redirect:/films/" + id + "/book?error=true";
+        }
     }
 
     // -------------------------------------------------------------------------------------------------
