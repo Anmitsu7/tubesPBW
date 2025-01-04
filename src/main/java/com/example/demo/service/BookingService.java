@@ -58,9 +58,9 @@ public class BookingService {
     }
 
     public boolean hasActiveBooking(String username, Long filmId) {
-        return bookingRepository.existsByUsernameAndFilmIdAndStatus(username, filmId, "ACTIVE");
-    }
-    
+    return bookingRepository.existsByUsernameAndFilmIdAndStatus(username, filmId, "ACTIVE");
+}
+
     
     
     public void returnFilm(Long bookingId) {
