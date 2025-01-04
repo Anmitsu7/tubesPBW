@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Repository
 public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
+    Page<Penyewaan> findByPenggunaIdOrderByTanggalSewaDesc(Long penggunaId, Pageable pageable);
     // Basic queries
     Long countByStatus(String status);
     Long countByFilmIdAndStatus(Long filmId, String status);

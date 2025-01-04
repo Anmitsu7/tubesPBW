@@ -28,6 +28,11 @@ import com.example.demo.model.User;
 import com.example.demo.repository.PenyewaanRepository;
 import com.example.demo.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.Predicate;
+
 @Service
 public class UserService implements UserDetailsService {
 
@@ -37,7 +42,7 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User tidak ditemukan: " + username));
 
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
-        
+
         // Update last login time
         user.setLastLoginTime(LocalDateTime.now());
         userRepository.save(user);
@@ -66,11 +71,11 @@ public class UserService implements UserDetailsService {
     public User registerUser(RegisterRequest request) {
         try {
             logger.info("Starting registration process for user: {}", request.getUsername());
-            
+
             // Log validasi
             logger.info("Validating registration data");
             validateRegistration(request);
-            
+
             User newUser = new User();
             newUser.setUsername(request.getUsername());
             newUser.setEmail(request.getEmail());
@@ -306,7 +311,7 @@ public class UserService implements UserDetailsService {
     public long getTotalActiveUsers() {
         return userRepository.countByLastLoginTimeIsNotNull();
     }
-    
+
     public long getTotalUsers() {
         return userRepository.count();
     }
@@ -367,10 +372,10 @@ public class UserService implements UserDetailsService {
     // Method untuk validasi password
     public boolean isValidPassword(String password) {
         return password != null &&
-               password.length() >= 8 &&
-               password.matches(".*[A-Z].*") &&    // at least one uppercase
-               password.matches(".*[a-z].*") &&    // at least one lowercase
-               password.matches(".*\\d.*");        // at least one digit
+                password.length() >= 8 &&
+                password.matches(".*[A-Z].*") && // at least one uppercase
+                password.matches(".*[a-z].*") && // at least one lowercase
+                password.matches(".*\\d.*"); // at least one digit
     }
 
     // Method untuk reset password
@@ -378,13 +383,13 @@ public class UserService implements UserDetailsService {
     public void resetPassword(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
-        
+
         String temporaryPassword = generateTemporaryPassword();
         user.setPassword(passwordEncoder.encode(temporaryPassword));
         user.setCredentialsNonExpired(false);
-        
+
         userRepository.save(user);
-        
+
         // TODO: Send email with temporary password
         logger.info("Password reset for user: {}", username);
     }
@@ -393,12 +398,32 @@ public class UserService implements UserDetailsService {
         // Generate a random 10-character password
         return UUID.randomUUID().toString().substring(0, 10);
     }
+
     public List<User> getRecentLogins() {
         return userRepository.findRecentLogins();
     }
-    
+
     public User findById(Long id) {
         return userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+                .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
+    }
+
+    public Page<Map<String, Object>> getPaginatedRentalHistory(String username, Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return penyewaanRepository.findByPenggunaIdOrderByTanggalSewaDesc(user.getId(), pageable)
+                .map(penyewaan -> {
+                    Map<String, Object> rentalData = new HashMap<>();
+                    rentalData.put("id", penyewaan.getId());
+                    rentalData.put("filmTitle", penyewaan.getFilm().getJudul());
+                    rentalData.put("filmCover", penyewaan.getFilm().getCoverUrl());
+                    rentalData.put("tanggalSewa", penyewaan.getTanggalSewa());
+                    rentalData.put("tanggalKembali", penyewaan.getTanggalKembali());
+                    rentalData.put("status", penyewaan.getStatus());
+                    rentalData.put("rentalDuration", penyewaan.getRentalDuration());
+                    rentalData.put("lateFee", penyewaan.getLateFee());
+                    return rentalData;
+                });
     }
 }

@@ -24,7 +24,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -65,7 +64,7 @@ public class MainController {
     public String showExplore(Model model,
             @RequestParam(required = false) String judul,
             @RequestParam(required = false) List<Long> genreIds,
-            @RequestParam(required = false) List<Long> aktorIds, 
+            @RequestParam(required = false) List<Long> aktorIds,
             @RequestParam(required = false) Integer tahunRilis,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
@@ -295,6 +294,69 @@ public class MainController {
             logger.error("Error fetching user data", e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("message", "Gagal mengambil data user"));
+        }
+    }
+
+    @GetMapping("/history")
+    public String rentalHistory(Model model, Authentication authentication) {
+        try {
+            if (authentication == null) {
+                return "redirect:/login";
+            }
+
+            // Add username for navigation
+            model.addAttribute("username", authentication.getName());
+
+            // Get paginated rental history
+            // Default to first page with 10 items per page
+            Pageable pageable = PageRequest.of(0, 10);
+            Page<Map<String, Object>> rentalHistory = userService.getPaginatedRentalHistory(
+                    authentication.getName(),
+                    pageable);
+
+            // Add rental history data to model
+            model.addAttribute("rentals", rentalHistory.getContent());
+            model.addAttribute("currentPage", rentalHistory.getNumber());
+            model.addAttribute("totalPages", rentalHistory.getTotalPages());
+            model.addAttribute("totalItems", rentalHistory.getTotalElements());
+
+            return "rental-history";
+        } catch (Exception e) {
+            logger.error("Error loading rental history", e);
+            return "error/500";
+        }
+    }
+
+    @GetMapping("/history/page")
+    public String rentalHistoryPaginated(
+            Model model,
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            if (authentication == null) {
+                return "redirect:/login";
+            }
+
+            // Add username for navigation
+            model.addAttribute("username", authentication.getName());
+
+            // Get paginated rental history with requested page and size
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Map<String, Object>> rentalHistory = userService.getPaginatedRentalHistory(
+                    authentication.getName(),
+                    pageable);
+
+            // Add rental history data to model
+            model.addAttribute("rentals", rentalHistory.getContent());
+            model.addAttribute("currentPage", rentalHistory.getNumber());
+            model.addAttribute("totalPages", rentalHistory.getTotalPages());
+            model.addAttribute("totalItems", rentalHistory.getTotalElements());
+
+            return "rental-history";
+        } catch (Exception e) {
+            logger.error("Error loading paginated rental history", e);
+            return "error/500";
         }
     }
 
