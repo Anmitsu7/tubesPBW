@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,16 +23,18 @@ import com.example.demo.service.AdminService;
 import com.example.demo.service.FilmService;
 import com.example.demo.service.UserService;
 
+import org.springframework.security.core.Authentication;
+
 @Controller
 @RequestMapping("/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
-    
+
     @Autowired
     private AdminService adminService;
-    
+
     @Autowired
     private FilmService filmService;
 
@@ -42,6 +45,11 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         try {
+            // Get current logged in username
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            model.addAttribute("username", username);
+
             // Add dashboard data
             model.addAttribute("totalFilms", filmService.getTotalFilms());
             model.addAttribute("totalActiveUsers", userService.getTotalActiveUsers());
@@ -49,11 +57,11 @@ public class AdminController {
             model.addAttribute("latestFilms", filmService.getLatestFilms());
             model.addAttribute("popularFilms", filmService.getPopularFilms());
             model.addAttribute("recentRentals", adminService.getRecentRentals());
-            
+
             return "admin/dashboard";
         } catch (Exception e) {
             logger.error("Error loading admin dashboard", e);
-            return "error/500";
+            throw new RuntimeException("Failed to load dashboard", e);
         }
     }
 
@@ -72,8 +80,8 @@ public class AdminController {
     }
 
     @PostMapping("/films/add")
-    public String addFilm(@ModelAttribute FilmDTO filmDTO, 
-                         @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
+    public String addFilm(@ModelAttribute FilmDTO filmDTO,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
         try {
             filmService.addFilm(filmDTO, coverImage);
             return "redirect:/admin/films?success=true";
@@ -84,9 +92,9 @@ public class AdminController {
     }
 
     @PostMapping("/films/update/{id}")
-    public String updateFilm(@PathVariable Long id, 
-                           @ModelAttribute FilmDTO filmDTO, 
-                           @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
+    public String updateFilm(@PathVariable Long id,
+            @ModelAttribute FilmDTO filmDTO,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
         try {
             filmService.updateFilm(id, filmDTO, coverImage);
             return "redirect:/admin/films?success=true";
@@ -165,8 +173,8 @@ public class AdminController {
     }
 
     @PostMapping("/actors/add")
-    public String addActor(@ModelAttribute AktorDTO aktorDTO, 
-                          @RequestParam(value="photoImage", required = false) MultipartFile photoImage) {
+    public String addActor(@ModelAttribute AktorDTO aktorDTO,
+            @RequestParam(value = "photoImage", required = false) MultipartFile photoImage) {
         try {
             filmService.addActor(aktorDTO, photoImage);
             return "redirect:/admin/actors?success=true";
@@ -177,9 +185,9 @@ public class AdminController {
     }
 
     @PostMapping("/actors/update/{id}")
-    public String updateActor(@PathVariable Long id, 
-                            @ModelAttribute AktorDTO aktorDTO,
-                            @RequestParam(value = "photoImage", required = false) MultipartFile photoImage) {
+    public String updateActor(@PathVariable Long id,
+            @ModelAttribute AktorDTO aktorDTO,
+            @RequestParam(value = "photoImage", required = false) MultipartFile photoImage) {
         try {
             filmService.updateActor(id, aktorDTO, photoImage);
             return "redirect:/admin/actors?success=true";
@@ -201,7 +209,7 @@ public class AdminController {
     }
 
     // Users Management
-  
+
     // Rentals Management
     @GetMapping("/rentals")
     public String showRentalsPage(Model model) {
@@ -240,7 +248,7 @@ public class AdminController {
 
     @GetMapping("/reports/monthly")
     public ResponseEntity<?> getMonthlyReport(@RequestParam(required = false) Integer year,
-                                            @RequestParam(required = false) Integer month) {
+            @RequestParam(required = false) Integer month) {
         try {
             return ResponseEntity.ok(adminService.getMonthlyReport(year, month));
         } catch (Exception e) {
@@ -251,7 +259,7 @@ public class AdminController {
 
     @GetMapping("/reports/download/monthly")
     public ResponseEntity<?> downloadMonthlyReport(@RequestParam int year,
-                                                 @RequestParam int month) {
+            @RequestParam int month) {
         try {
             return adminService.generateMonthlyReportPDF(year, month);
         } catch (Exception e) {
@@ -261,4 +269,3 @@ public class AdminController {
     }
 
 }
-

@@ -1,6 +1,13 @@
+-- Membuat sequences untuk auto-increment
+CREATE SEQUENCE genre_id_seq START 1;
+CREATE SEQUENCE aktor_id_seq START 1;
+CREATE SEQUENCE film_id_seq START 1;
+CREATE SEQUENCE pengguna_id_seq START 1;
+CREATE SEQUENCE penyewaan_id_seq START 1;
+
 -- Tabel Genre
 CREATE TABLE genre (
-   id SERIAL PRIMARY KEY,
+   id INT PRIMARY KEY DEFAULT nextval('genre_id_seq'),
    nama VARCHAR(50) NOT NULL UNIQUE,
    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
    updated_at TIMESTAMP
@@ -8,7 +15,7 @@ CREATE TABLE genre (
 
 -- Tabel Aktor
 CREATE TABLE aktor (
-   id SERIAL PRIMARY KEY,
+   id INT PRIMARY KEY DEFAULT nextval('aktor_id_seq'),
    nama VARCHAR(100) NOT NULL,
    negara_asal VARCHAR(50),
    foto_url VARCHAR(255),
@@ -18,7 +25,7 @@ CREATE TABLE aktor (
 
 -- Tabel Film
 CREATE TABLE film (
-   id SERIAL PRIMARY KEY,
+   id INT PRIMARY KEY DEFAULT nextval('film_id_seq'),
    judul VARCHAR(200) NOT NULL,
    deskripsi TEXT,
    tahun_rilis INT,
@@ -48,7 +55,7 @@ CREATE TABLE film_aktor (
 
 -- Tabel Pengguna
 CREATE TABLE pengguna (
-   id SERIAL PRIMARY KEY,
+   id INT PRIMARY KEY DEFAULT nextval('pengguna_id_seq'),
    username VARCHAR(50) NOT NULL UNIQUE,
    password VARCHAR(255) NOT NULL,
    email VARCHAR(100) UNIQUE,
@@ -60,7 +67,7 @@ CREATE TABLE pengguna (
 
 -- Tabel Penyewaan
 CREATE TABLE penyewaan (
-   id SERIAL PRIMARY KEY,
+   id INT PRIMARY KEY DEFAULT nextval('penyewaan_id_seq'),
    pengguna_id INT,
    film_id INT,
    tanggal_sewa DATE NOT NULL,
@@ -141,9 +148,13 @@ INSERT INTO genre (nama) VALUES
     ('Film Noir'),
     ('Psychological');
 
--- Membuat admin default
-INSERT INTO pengguna (username, password, email, role) 
-VALUES ('admin', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'admin@gmail.com', 'ADMIN');
+-- Membuat admin default dan pengguna
+INSERT INTO pengguna (username, password, email, role) VALUES 
+('admin', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'admin@gmail.com', 'ADMIN'),
+('john_doe', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'john@example.com', 'PELANGGAN'),
+('jane_smith', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'jane@example.com', 'PELANGGAN'),
+('robert_wilson', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'robert@example.com', 'PELANGGAN'),
+('sarah_brown', '$2a$10$qFh7g/wxI/eaPgiIZDHyyuJFjw7q2wPBTB0Ufi6sg8h30tC9PhQ9S', 'sarah@example.com', 'PELANGGAN');
 
 -- Insert Aktor
 INSERT INTO aktor (nama, negara_asal, foto_url) VALUES
@@ -160,16 +171,16 @@ INSERT INTO aktor (nama, negara_asal, foto_url) VALUES
 
 -- Insert Film
 INSERT INTO film (judul, deskripsi, tahun_rilis, genre_id, stok, cover_url) VALUES
-('The Adventure Begins', 'An epic journey through unknown lands', 2023, 2, 5, 'https://example.com/covers/adventure_begins.jpg'),
-('City Lights', 'A romantic comedy set in New York', 2022, 4, 3, 'https://example.com/covers/city_lights.jpg'),
-('The Last Stand', 'Action-packed thriller about a final mission', 2023, 1, 4, 'https://example.com/covers/last_stand.jpg'),
-('Mystery Manor', 'A detective story full of twists', 2021, 11, 2, 'https://example.com/covers/mystery_manor.jpg'),
-('Space Warriors', 'Science fiction epic about interstellar war', 2022, 13, 6, 'https://example.com/covers/space_warriors.jpg'),
-('Love in Paris', 'A romantic tale in the city of love', 2023, 12, 3, 'https://example.com/covers/love_paris.jpg'),
-('The Dragon Master', 'Martial arts adventure in ancient China', 2021, 22, 4, 'https://example.com/covers/dragon_master.jpg'),
-('Heroes Unite', 'Superhero team saves the world', 2022, 21, 5, 'https://example.com/covers/heroes_unite.jpg'),
-('Historical Queens', 'Drama about rival monarchs', 2023, 20, 3, 'https://example.com/covers/historical_queens.jpg'),
-('Mind Games', 'Psychological thriller about memory loss', 2022, 24, 4, 'https://example.com/covers/mind_games.jpg');
+('Top Gun: Maverick', 'After thirty years, Maverick is still pushing the envelope as a top naval aviator', 2022, 1, 5, 'top_gun_maverick.jpg'),
+('Inception', 'A thief who enters the dreams of others to steal secrets from their subconscious', 2010, 13, 3, 'inception.jpg'),
+('Harry Potter and the Deathly Hallows', 'The final chapter of Harry Potter saga', 2011, 9, 4, 'deathly_hallows.jpg'),
+('Rush Hour', 'A Hong Kong detective teams up with a Los Angeles cop for an investigation', 1998, 1, 2, 'rush_hour.jpg'),
+('Black Widow', 'Natasha Romanoff confronts the darker parts of her ledger', 2021, 21, 6, 'black_widow.jpg'),
+('Iron Man', 'Genius billionaire invents high-tech armor and becomes a superhero', 2008, 21, 3, 'iron_man.jpg'),
+('Wonder Woman', 'Amazon princess leaves her island home to fight in a war to end all wars', 2017, 21, 4, 'wonder_woman.jpg'),
+('Avengers: Endgame', 'The Avengers take one final stand against Thanos', 2019, 21, 5, 'avengers_endgame.jpg'),
+('Fight Club', 'An insomniac office worker and a mysterious soap maker form an underground fight club', 1999, 7, 3, 'fight_club.jpg'),
+('Mission: Impossible - Dead Reckoning', 'Ethan Hunt and his IMF team embark on their most dangerous mission yet', 2023, 1, 4, 'mi_dead_reckoning.jpg');
 
 -- Insert Film_Aktor
 INSERT INTO film_aktor (film_id, aktor_id) VALUES
@@ -184,8 +195,7 @@ INSERT INTO film_aktor (film_id, aktor_id) VALUES
 (9, 5), (9, 10), -- Historical Queens stars Scarlett Johansson and Brad Pitt
 (10, 1), (10, 2); -- Mind Games stars Tom Cruise and Leonardo DiCaprio
 
-
--- Insert Penyewaan
+-- Insert Penyewaan 
 INSERT INTO penyewaan (pengguna_id, film_id, tanggal_sewa, tanggal_kembali, status, rental_duration, late_fee, notes) VALUES
 (2, 1, '2023-12-25', '2024-01-01', 'DIKEMBALIKAN', 7, 0.00, 'Returned on time'),
 (3, 2, '2023-12-28', NULL, 'DISEWA', 7, NULL, 'Currently rented'),
@@ -197,3 +207,54 @@ INSERT INTO penyewaan (pengguna_id, film_id, tanggal_sewa, tanggal_kembali, stat
 (5, 8, '2023-12-29', NULL, 'DISEWA', 7, NULL, 'Currently rented'),
 (2, 9, '2023-12-22', '2023-12-29', 'DIKEMBALIKAN', 7, 0.00, 'Returned on time'),
 (3, 10, '2023-12-26', NULL, 'DISEWA', 7, NULL, 'Currently rented');
+
+-- Update cover_url untuk setiap film
+UPDATE film 
+SET cover_url = 'top_gun_maverick.jpg',
+    deskripsi = 'After thirty years, Maverick is still pushing the envelope as a top naval aviator'
+WHERE id = 1;
+
+UPDATE film 
+SET cover_url = 'inception.jpg',
+    deskripsi = 'A thief who enters the dreams of others to steal secrets from their subconscious'
+WHERE id = 2;
+
+UPDATE film 
+SET cover_url = 'deathly_hallows.jpg',
+    deskripsi = 'The final chapter of Harry Potter saga'
+WHERE id = 3;
+
+UPDATE film 
+SET cover_url = 'rush_hour.jpg',
+    deskripsi = 'A Hong Kong detective teams up with a Los Angeles cop for an investigation'
+WHERE id = 4;
+
+UPDATE film 
+SET cover_url = 'black_widow.jpg',
+    deskripsi = 'Natasha Romanoff confronts the darker parts of her ledger'
+WHERE id = 5;
+
+UPDATE film 
+SET cover_url = 'iron_man.jpg',
+    deskripsi = 'Genius billionaire invents high-tech armor and becomes a superhero'
+WHERE id = 6;
+
+UPDATE film 
+SET cover_url = 'wonder_woman.jpg',
+    deskripsi = 'Amazon princess leaves her island home to fight in a war to end all wars'
+WHERE id = 7;
+
+UPDATE film 
+SET cover_url = 'avengers_endgame.jpg',
+    deskripsi = 'The Avengers take one final stand against Thanos'
+WHERE id = 8;
+
+UPDATE film 
+SET cover_url = 'fight_club.jpg',
+    deskripsi = 'An insomniac office worker and a mysterious soap maker form an underground fight club'
+WHERE id = 9;
+
+UPDATE film 
+SET cover_url = 'mi_dead_reckoning.jpg',
+    deskripsi = 'Ethan Hunt and his IMF team embark on their most dangerous mission yet'
+WHERE id = 10;
