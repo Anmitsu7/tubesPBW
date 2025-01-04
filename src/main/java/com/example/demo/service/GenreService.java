@@ -18,4 +18,11 @@ public class GenreService {
     public List<Genre> getAllGenres() {
         return genreRepository.findAll();
     }
+
+    // Metode baru untuk mendapatkan nama genre berdasarkan genreId
+    public String getGenreNameById(Long genreId) {
+        return genreRepository.findById(genreId)
+                              .map(Genre::getNama)
+                              .orElse("Unknown");
+    }
 }
