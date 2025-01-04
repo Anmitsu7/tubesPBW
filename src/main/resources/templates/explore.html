@@ -5,283 +5,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Explore Films</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background-color: #0a0d1c;
-            color: #ffffff;
-            min-height: 100vh;
-        }
-
-        .explore-header {
-            background: linear-gradient(to bottom, rgba(29, 53, 87, 0.95), rgba(10, 13, 28, 0.9));
-            padding: 60px 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .explore-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('/path-to-your-background.jpg') center/cover;
-            z-index: -1;
-            filter: blur(5px);
-        }
-
-        .explore-header h1 {
-            font-size: 3.5em;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
-        }
-
-        .explore-header p {
-            font-size: 1.2em;
-            color: #a8b2d1;
-        }
-
-        .search-section {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 15px rgba(79, 195, 247, 0.3);
-        }
-
-        .search-button {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 30px;
-            background: #4fc3f7;
-            color: #fff;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .search-button:hover {
-            background: #03a9f4;
-            transform: translateY(-2px);
-        }
-
-        .film-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .film-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .film-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(79, 195, 247, 0.2);
-        }
-
-        .film-cover {
-            width: 100%;
-            height: 350px;
-            object-fit: cover;
-        }
-
-        .film-info {
-            padding: 20px;
-            background: linear-gradient(to top, rgba(10, 13, 28, 0.95), transparent);
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            transform: translateY(70%);
-            transition: transform 0.3s ease;
-        }
-
-        .film-card:hover .film-info {
-            transform: translateY(0);
-        }
-
-        .film-title {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-
-        .film-meta {
-            color: #a8b2d1;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
-
-        .details-button {
-            display: inline-block;
-            padding: 8px 20px;
-            background: #4fc3f7;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 20px;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .details-button:hover {
-            background: #03a9f4;
-        }
-
-        .explore-footer {
-            text-align: center;
-            padding: 20px;
-            color: #a8b2d1;
-            margin-top: 50px;
-        }
-
-        .filter-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .filter-select {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .filter-select option {
-            background: #0a0d1c;
-            color: #fff;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 50px;
-            color: #a8b2d1;
-        }
-
-        .film-grid {
-            padding: 2rem;
-            width: 100%;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 2rem;
-            padding: 1rem;
-        }
-
-        .film-card {
-            background: #1a1a1a;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .film-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .film-image {
-            width: 100%;
-            aspect-ratio: 2/3;
-            overflow: hidden;
-        }
-
-        .film-cover {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .film-details {
-            padding: 1rem;
-        }
-
-        .film-title {
-            font-size: 1rem;
-            font-weight: bold;
-            margin: 0;
-            color: white;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .film-year {
-            font-size: 0.9rem;
-            color: #888;
-            margin: 0.5rem 0;
-        }
-
-        .view-details {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: #0066cc;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            transition: background 0.3s ease;
-        }
-
-        .view-details:hover {
-            background: #0052a3;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 2rem;
-            color: #888;
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/explore.css" rel="stylesheet">
 </head>
 
 <body>
+    <nav class="navigation">
+        <div class="navigation-items">
+            <a href="/homepage-authenticated" class="brand">Rent Film</a>
+
+            <div class="nav-links">
+                <a href="/homepage-authenticated">Home</a>
+                <a href="/about">About us</a>
+                <a href="/explore" class="active">Explore</a>
+            </div>
+
+            <div id="userSection" class="user-section">
+                <div class="user-dropdown">
+                    <span id="username" th:text="${username}" class="dropdown-trigger">Username</span>
+                    <div id="dropdownContent" class="dropdown-content">
+                        <a href="/profile">Profile</a>
+                        <form th:action="@{/logout}" method="post" style="margin: 0;">
+                            <a href="#" onclick="this.closest('form').submit(); return false;">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header section -->
     <header class="explore-header">
         <h1>EXPLORE FILMS</h1>
         <p>SEARCH YOUR FAVORITE MOVIES BY GENRE, ACTOR, OR TITLE WITH ONE CLICK.</p>
     </header>
 
+    <!-- Search section -->
     <section class="search-section">
         <form th:action="@{/explore/search}" method="get">
             <div class="search-container">
@@ -294,28 +53,26 @@
                 <select name="genreId" class="filter-select">
                     <option value="">All Genres</option>
                     <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.nama}"
-                        th:selected="${genre.id == searchGenreId}">
-                    </option>
+                        th:selected="${genre.id == searchGenreId}"></option>
                 </select>
 
                 <select name="tahunRilis" class="filter-select">
                     <option value="">Release Year</option>
                     <option th:each="year : ${#numbers.sequence(2024, 1990)}" th:value="${year}" th:text="${year}"
-                        th:selected="${year == searchTahunRilis}">
-                    </option>
+                        th:selected="${year == searchTahunRilis}"></option>
                 </select>
             </div>
         </form>
     </section>
 
+    <!-- Film grid -->
     <div class="film-grid">
         <div th:if="${films != null && !films.empty}" class="grid-container">
             <div th:each="film : ${films}" class="film-card">
                 <div class="film-image">
-                    <img th:if="${film.coverUrl}" th:src="@{${film.coverUrl}}" class="film-cover"
-                        th:alt="${film.judul}">
-                    <img th:unless="${film.coverUrl}" src="/images/default-cover.jpg" class="film-cover"
-                        alt="Default Cover">
+                    <!-- Ubah path cover -->
+                    <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}" class="film-cover"
+                        onerror="this.src='/images/default-cover.jpg'">
                 </div>
                 <div class="film-details">
                     <h3 class="film-title" th:text="${film.judul}">Film Title</h3>
@@ -324,31 +81,55 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Add this after your film-grid div -->
-        <div class="pagination" th:if="${totalPages > 1}">
-            <div class="pagination-controls">
-                <a th:if="${currentPage > 0}"
-                    th:href="@{/explore(page=${currentPage - 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
-                    class="pagination-button">&laquo; Previous</a>
-
-                <span class="pagination-info" th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}">
-                </span>
-
-                <a th:if="${currentPage < totalPages - 1}"
-                    th:href="@{/explore(page=${currentPage + 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
-                    class="pagination-button">Next &raquo;</a>
-            </div>
+    <!-- Pagination -->
+    <div class="pagination" th:if="${totalPages > 1}">
+        <div class="pagination-controls">
+            <a th:if="${currentPage > 0}"
+                th:href="@{/explore(page=${currentPage - 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
+                class="pagination-button">&laquo; Previous</a>
+            <span class="pagination-info" th:text="${'Page ' + (currentPage + 1) + ' of ' + totalPages}"></span>
+            <a th:if="${currentPage < totalPages - 1}"
+                th:href="@{/explore(page=${currentPage + 1}, size=12, judul=${searchJudul}, genreId=${searchGenreId}, tahunRilis=${searchTahunRilis}, available=${searchAvailable})}"
+                class="pagination-button">Next &raquo;</a>
         </div>
+    </div>
 
-        <div th:if="${#lists.isEmpty(films)}" class="no-results">
-            <h3>No films found matching your search criteria</h3>
-            <p>Try adjusting your search filters or browse all films</p>
-        </div>
+    <!-- No results message -->
+    <div th:if="${#lists.isEmpty(films)}" class="no-results">
+        <h3>No films found matching your search criteria</h3>
+        <p>Try adjusting your search filters or browse all films</p>
+    </div>
+    </div>
 
-        <footer class="explore-footer">
-            <p>&copy; 2024 RENTAL FILM. ALL RIGHTS RESERVED.</p>
-        </footer>
+    <footer class="explore-footer">
+        <p>&copy; 2024 RENTAL FILM. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('dropdownContent');
+
+            // Toggle dropdown on click
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
+
 </body>
 
 </html>
