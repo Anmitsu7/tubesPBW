@@ -1,26 +1,22 @@
 package com.example.demo.repository;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import com.example.demo.model.Booking;
+import com.example.demo.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByUsername(String username);
-    List<Booking> findByFilmId(Long filmId);
-    List<Booking> findByStatus(String status);
-    List<Booking> findByEndDateBeforeAndStatus(LocalDate date, String status);
     
-    // Untuk mendapatkan booking aktif user tertentu
-    List<Booking> findByUsernameAndStatus(String username, String status);
+    @Query("SELECT b FROM Booking b WHERE b.user = :user AND b.status = :status")
+    List<Booking> findByUserAndStatus(@Param("user") User user, @Param("status") String status);
     
-    // Untuk cek apakah user sudah meminjam film tertentu
-    boolean existsByUsernameAndFilmIdAndStatus(String username, Long filmId, String status);
-    
-    // Untuk mendapatkan total booking aktif
-    long countByStatus(String status);
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.user = :user AND b.film.id = :filmId AND b.status = :status")
+    boolean existsByUserAndFilmIdAndStatus(
+        @Param("user") User user, 
+        @Param("filmId") Long filmId, 
+        @Param("status") String status);
 }

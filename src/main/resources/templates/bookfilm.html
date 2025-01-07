@@ -1,204 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Film Details</title>
+    <link rel="stylesheet" th:href="@{/css/book.css}">
     <style>
-        /* Base styles */
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(to bottom right, #1a1a2e, #2d3a6d);
-            color: white;
-        }
-
-        /* Navigation */
-        .nav-container {
-            background: rgba(26, 26, 46, 0.95);
-            padding: 1rem;
-        }
-
-        .nav-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-link.active {
-            color: #4ade80;
-        }
-
-        .user-profile {
-            background: #374151;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-        }
-
-        /* Main content */
-        .container {
-            max-width: 1200px;
-            margin: 2.5rem auto;
-            padding: 0 1rem;
-        }
-
-        .detail-card {
-            background: rgba(31, 41, 55, 0.5);
-            border-radius: 0.5rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .detail-content {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .detail-content {
-                flex-direction: row;
-            }
-        }
-
-        /* Film cover */
-        .film-cover-container {
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .film-cover {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            border-radius: 0.5rem;
-        }
-
-        /* Film info */
-        .film-info {
-            flex: 2;
-            padding: 2rem;
-        }
-
-        .film-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .stock-badge {
-            display: inline-flex;
-            align-items: center;
-            background: #4ade80;
-            color: #1a1a2e;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .info-item h3 {
-            color: #4ade80;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .synopsis,
-        .cast {
-            margin-bottom: 1.5rem;
-        }
-
-        .synopsis h3,
-        .cast h3 {
-            color: #4ade80;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Booking form */
-        .booking-form {
-            margin-top: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            display: block;
-            color: #4ade80;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            background: #374151;
-            border: 1px solid #4b5563;
-            border-radius: 0.375rem;
-            color: white;
-            margin-bottom: 1rem;
-        }
-
-        .book-button {
-            width: 100%;
-            padding: 0.75rem;
-            background: #4ade80;
-            color: #1a1a2e;
-            border: none;
-            border-radius: 0.375rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .book-button:hover {
-            background: #22c55e;
-        }
-
-        .book-button.disabled {
-            background: #6b7280;
-            cursor: not-allowed;
-        }
-
-        .out-of-stock {
-            color: #ef4444;
-        }
-
-        .view-details.disabled {
-            pointer-events: none;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
         .notification {
             position: fixed;
             top: 20px;
@@ -247,8 +53,24 @@
         }
     </style>
 </head>
-
 <body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a th:href="@{/}" class="nav-brand">Rent Film</a>
+            <div class="nav-links">
+                <a th:href="@{/home}" class="nav-link">Home</a>
+                <a th:href="@{/explore}" class="nav-link active">Explore</a>
+                <div class="user-profile">
+                    <span th:text="${username}">username</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Notification Popup -->
     <div id="notification" class="notification hidden">
         <div class="notification-content">
             <span class="notification-message"></span>
@@ -259,28 +81,12 @@
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="nav-container">
-        <div class="nav-content">
-            <a href="/" class="nav-brand">Rent Film</a>
-            <div class="nav-links">
-                <a href="/home" class="nav-link">Home</a>
-                <a href="/explore" class="nav-link active">Explore</a>
-                <div class="user-profile">
-                    <span th:text="${username}">username</span>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="container">
         <div class="detail-card">
             <div class="detail-content">
                 <!-- Film Cover -->
                 <div class="film-cover-container">
-                    <img th:src="@{'/covers/' + ${film.coverUrl}}" th:alt="${film.judul}" class="film-cover"
-                        onerror="this.src='/images/default-cover.jpg'">
+                    <img th:src="@{${film.coverUrl != null ? '/covers/' + film.coverUrl : '/images/default-cover.jpg'}}"
+                         th:alt="${film.judul}" class="film-cover">
                 </div>
 
                 <!-- Film Info -->
@@ -288,9 +94,9 @@
                     <h1 class="film-title" th:text="${film.judul}">Film Title</h1>
 
                     <div th:if="${film.stok > 0}" class="stock-badge">
-                        <span th:text="'Stock: ' + ${film.stok}">Stock: 5</span>
+                        <span th:text="|Stock: ${film.stok}|">Stock: 5</span>
                     </div>
-                    <div th:if="${film.stok == 0}" class="stock-badge out-of-stock">
+                    <div th:if="${film.stok <= 0}" class="stock-badge out-of-stock">
                         Out of Stock
                     </div>
 
@@ -319,18 +125,21 @@
                         <p th:text="${film.deskripsi}">Film description goes here.</p>
                     </div>
 
-                    <div class="cast" th:if="${film.aktorNames != null and !film.aktorNames.empty}">
+                    <div class="cast" th:if="${film.aktorNames != null and not #lists.isEmpty(film.aktorNames)}">
                         <h3>Cast</h3>
                         <p th:text="${#strings.listJoin(film.aktorNames, ', ')}">Actor 1, Actor 2, Actor 3</p>
                     </div>
 
-                    <!-- Modified booking form without direct CSRF token reference -->
-                    <form th:if="${film.stok > 0}" id="bookingForm"
-                        th:action="@{/films/{id}/book/confirm(id=${film.id})}" method="post" class="booking-form">
-
+                    <!-- Booking form -->
+                    <form th:if="${film.stok > 0}" 
+                          th:action="@{/films/{id}/book/confirm(id=${film.id})}" 
+                          method="post" 
+                          id="bookingForm" 
+                          class="booking-form">
+                        
                         <div class="form-group">
-                            <label class="form-label">Rental Duration (days)</label>
-                            <select name="duration" class="form-select">
+                            <label for="duration" class="form-label">Rental Duration (days)</label>
+                            <select name="duration" id="duration" class="form-select">
                                 <option value="3">3 days</option>
                                 <option value="5">5 days</option>
                                 <option value="7">7 days</option>
@@ -341,22 +150,23 @@
                         </button>
                     </form>
 
-                    <button th:if="${film.stok == 0}" class="book-button disabled" disabled>
+                    <button th:if="${film.stok <= 0}" class="book-button disabled" disabled>
                         Out of Stock
                     </button>
 
                     <!-- Additional Rental Information -->
-                    <div class="rental-info" th:if="${film.totalRentals != null || film.rentedCount != null}">
+                    <div class="rental-info" th:if="${film.totalRentals != null or film.rentedCount != null}">
                         <h3>Rental Statistics</h3>
-                        <p th:if="${film.totalRentals != null}" th:text="'Total times rented: ' + ${film.totalRentals}">
+                        <p th:if="${film.totalRentals != null}" th:text="|Total times rented: ${film.totalRentals}|">
                             Total times rented: 0</p>
-                        <p th:if="${film.rentedCount != null}" th:text="'Currently rented: ' + ${film.rentedCount}">
+                        <p th:if="${film.rentedCount != null}" th:text="|Currently rented: ${film.rentedCount}|">
                             Currently rented: 0</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+<<<<<<< HEAD
 </body>
 <script>
     document.getElementById('bookingForm').addEventListener('submit', async (e) => {
@@ -374,13 +184,28 @@
                 body: `duration=${duration}`
             });
 
+=======
+
+    <script>
+        function showNotification(type, message, duration) {
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             const notification = document.getElementById('notification');
             const messageElement = notification.querySelector('.notification-message');
             const rentalDurationElement = document.getElementById('rentalDuration');
             const returnDateElement = document.getElementById('returnDate');
 
-            notification.classList.remove('success', 'error', 'hidden');
+<<<<<<< HEAD
+=======
+            // Debug log
+            console.log('Showing notification:', { type, message, duration });
 
+            // Remove existing classes and add new ones
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
+            notification.classList.remove('success', 'error', 'hidden');
+            notification.classList.add(type);
+            messageElement.textContent = message;
+
+<<<<<<< HEAD
             const redirectUrl = response.url;
             const urlParams = new URLSearchParams(new URL(redirectUrl).search);
 
@@ -422,10 +247,18 @@
                 }
                 messageElement.textContent = errorMessage;
                 notification.classList.add('error');
+=======
+            if (type === 'success' && duration) {
+                rentalDurationElement.textContent = duration;
+                const returnDate = new Date();
+                returnDate.setDate(returnDate.getDate() + parseInt(duration));
+                returnDateElement.textContent = returnDate.toLocaleDateString();
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             }
 
             notification.classList.add('show');
 
+<<<<<<< HEAD
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
@@ -443,6 +276,9 @@
             messageElement.textContent = 'Gagal membooking film. Silakan coba lagi.';
 
             notification.classList.add('show');
+=======
+            // Hide after 5 seconds
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
@@ -450,7 +286,72 @@
                 }, 300);
             }, 5000);
         }
-    });
-</script>
 
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const duration = formData.get('duration');
+            
+            // Debug logs
+            console.log('Form action URL:', this.action);
+            console.log('Duration:', duration);
+
+            // Create URLSearchParams
+            const params = new URLSearchParams();
+            params.append('duration', duration);
+            
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params.toString(),
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                // Debug log
+                console.log('Response status:', response.status);
+                console.log('Response URL:', response.url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response;
+            })
+            .then(response => {
+                const responseUrl = new URL(response.url);
+                console.log('Response URL params:', Object.fromEntries(responseUrl.searchParams));
+
+                if (responseUrl.searchParams.has('error')) {
+                    const errorType = responseUrl.searchParams.get('error');
+                    const errorMessage = {
+                        'outofstock': 'Sorry, this film is out of stock.',
+                        'alreadybooked': 'You have already booked this film.'
+                    }[errorType] || 'Failed to book the film. Please try again.';
+                    
+                    showNotification('error', errorMessage);
+                } else {
+                    showNotification('success', 'Film successfully booked!', duration);
+                    
+                    // Update stock display
+                    const stockElement = document.querySelector('.stock-badge span');
+                    if (stockElement) {
+                        const currentStock = parseInt(stockElement.textContent.split(': ')[1]) - 1;
+                        stockElement.textContent = `Stock: ${currentStock}`;
+                    }
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = '/history';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                showNotification('error', 'Failed to book the film. Please try again.');
+            });
+        });
+    </script>
+</body>
 </html>
