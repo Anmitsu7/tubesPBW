@@ -3,5 +3,5 @@
 3. copy paste sewafilm.sql
 4. f5
 
-username admin: admin
-password admin: adminn
+-username admin: admin
+-password admin: adminn
