@@ -58,16 +58,16 @@ public class User implements UserDetails {
    private UserRole role;
 
    @Column(name = "account_non_locked")
-   private boolean accountNonLocked = true;
+   private Boolean accountNonLocked = true;
 
    @Column(name = "account_non_expired")
    private boolean accountNonExpired = true;
 
    @Column(name = "credentials_non_expired")
-   private boolean credentialsNonExpired = true;
+   private Boolean credentialsNonExpired = true;
 
    @Column(name = "enabled")
-   private boolean enabled = true;
+   private Boolean enabled = true;
 
    @Column(name = "last_login_time")
    private LocalDateTime lastLoginTime;

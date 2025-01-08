@@ -136,7 +136,7 @@
                        </thead>
                        <tbody>
                            <tr th:each="film : ${films}">
-                               <td><img th:src="${film.coverUrl}" alt="Cover Film" class="film-cover"></td>
+                               <td><img th:src="@{'/covers/' + ${film.coverUrl}}" alt="Cover Film" class="film-cover"></td>
                                <td th:text="${film.judul}"></td>
                                <td th:text="${film.genreNama}"></td>
                                <td th:text="${film.tahunRilis}"></td>
