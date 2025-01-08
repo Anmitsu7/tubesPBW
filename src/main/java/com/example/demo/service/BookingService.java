@@ -130,4 +130,16 @@ public class BookingService {
             throw new RuntimeException("Gagal memproses pengembalian: " + e.getMessage());
         }
     }
+
+    public long getTotalRentals(User user) {
+        return bookingRepository.countByUser(user);
+    }
+
+    public long getActiveRentals(User user) {
+        return bookingRepository.countByUserAndStatus(user, "DISEWA");
+    }
+
+    public List<Booking> getRecentRentals(User user) {
+        return bookingRepository.findRecentBookings(user);
+    }
 }

@@ -1,39 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link rel="stylesheet" href="css/profile.css">
+    <title>ReelRental - Profile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
 </head>
 <body>
-    <header class="profile-header">
-        <h1>My Profile</h1>
-        <p>Manage your account and preferences.</p>
-    </header>
-
-    <section class="profile-section">
-        <div class="profile-card">
-            <img src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-picture">
-            <h2>John Doe</h2>
-            <p>Email: john.doe@example.com</p>
-            <p>Joined: January 2023</p>
-            <button class="btn">Edit Profile</button>
+    <nav class="navigation">
+        <div class="navigation-items">
+            <a href="/homepage-authenticated" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <a href="#" class="brand">Rent Film</a>
+            <div class="user-section">
+                <div class="user-dropdown">
+                    <span id="username" th:text="${user.username}" class="dropdown-trigger">Username</span>
+                    <div id="dropdownContent" class="dropdown-content">
+                        <a href="/profile">Profile</a>
+                        <form th:action="@{/logout}" method="post" style="margin: 0;">
+                            <a href="#" onclick="this.closest('form').submit(); return false;">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
+    </nav>
 
-        <div class="activity-card">
-            <h3>Rental Activity</h3>
-            <ul>
-                <li><strong>Title:</strong> Inception | <strong>Date:</strong> 2024-11-15 | <strong>Status:</strong> Returned</li>
-                <li><strong>Title:</strong> Interstellar | <strong>Date:</strong> 2024-11-10 | <strong>Status:</strong> Overdue</li>
-                <li><strong>Title:</strong> The Matrix | <strong>Date:</strong> 2024-11-05 | <strong>Status:</strong> Returned</li>
-            </ul>
-            <button class="btn">View All</button>
+    <main class="main-content">
+        <div class="profile-container">
+            <section class="profile-section">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <h2 th:text="${user.username}">Username</h2>
+                        <p class="email" th:text="${user.email}">email@example.com</p>
+                        <p class="join-date">Member since: <span th:text="${#temporals.format(user.createdAt, 'dd MMMM yyyy')}">January 2024</span></p>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" th:text="${totalRentals}">0</span>
+                            <span class="stat-label">Total Rentals</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" th:text="${activeRentals}">0</span>
+                            <span class="stat-label">Active Rentals</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="activity-card">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" th:if="${not #lists.isEmpty(recentRentals)}">
+                        <div class="activity-item" th:each="rental : ${recentRentals}">
+                            <img th:src="@{'/covers/' + ${rental.film.coverUrl}}" 
+                                 alt="Film Cover"
+                                 class="activity-film-cover"
+                                 onerror="this.src='/images/default-cover.jpg'">
+                            <div class="activity-details">
+                                <h4 th:text="${rental.film.judul}">Film Title</h4>
+                                <p>Rented: <span th:text="${#temporals.format(rental.startDate, 'dd MMM yyyy')}">Date</span></p>
+                                <p th:if="${rental.endDate != null}">
+                                    Returned: <span th:text="${#temporals.format(rental.endDate, 'dd MMM yyyy')}">Date</span>
+                                </p>
+                                <p th:if="${rental.lateFee != null && rental.lateFee > 0}" class="late-fee">
+                                    Late Fee: <span th:text="${'Rp ' + #numbers.formatDecimal(rental.lateFee, 0, 'COMMA', 0, 'POINT')}">Fee</span>
+                                </p>
+                                <div th:class="'rental-status ' + (${rental.status == 'DISEWA' ? 'status-rented' : 'status-returned'})"
+                                     th:text="${rental.status}">Status</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="no-activity" th:if="${#lists.isEmpty(recentRentals)}">
+                        <p>No rental activity yet</p>
+                    </div>
+                    <a href="/history" class="view-all-btn">View All History</a>
+                </div>
+            </section>
         </div>
-    </section>
+    </main>
 
-    <footer class="profile-footer">
-        <p>&copy; 2024 Rental Film. All rights reserved.</p>
-    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('dropdownContent');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
