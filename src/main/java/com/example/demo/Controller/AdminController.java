@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,8 +23,6 @@ import com.example.demo.dto.GenreDTO;
 import com.example.demo.service.AdminService;
 import com.example.demo.service.FilmService;
 import com.example.demo.service.UserService;
-
-import org.springframework.security.core.Authentication;
 
 @Controller
 @RequestMapping("/admin")
@@ -62,7 +61,7 @@ public class AdminController {
             model.addAttribute("totalActiveRentals", adminService.getTotalActiveRentals());
             model.addAttribute("latestFilms", filmService.getLatestFilms());
             model.addAttribute("popularFilms", filmService.getPopularFilms());
-            model.addAttribute("recentRentals", adminService.getRecentRentals());
+            // model.addAttribute("recentRentals", adminService.getRecentRentals());
 
             return "admin/dashboard";
         } catch (Exception e) {
@@ -120,6 +119,8 @@ public class AdminController {
             return "redirect:/admin/films?error=true";
         }
     }
+
+    
 
     // Genre Management
     @GetMapping("/genres")
