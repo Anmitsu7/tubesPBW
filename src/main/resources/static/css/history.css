@@ -98,13 +98,14 @@ body {
 }
 
 .rental-card {
+    position: relative;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 15px;
     padding: 1.5rem;
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: 1.5rem;
-    align-items: center;
+    align-items: start;
     transition: transform 0.3s ease;
 }
 
@@ -113,26 +114,36 @@ body {
 }
 
 .film-poster {
-    width: 100px;
-    height: 150px;
+    width: 150px;
+    height: 200px;
     object-fit: cover;
     border-radius: 8px;
 }
 
+.rental-info {
+    flex: 1;
+}
+
 .rental-info h3 {
     color: #fff;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
 }
 
 .rental-details {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    display: grid;
+    gap: 0.5rem;
 }
 
 .rental-status {
-    padding: 0.5rem 1rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem 1.2rem;
     border-radius: 20px;
-    font-weight: 500;
+    font-weight: 600;
     text-align: center;
     min-width: 120px;
 }
@@ -145,6 +156,99 @@ body {
 .status-returned {
     background: rgba(76, 175, 80, 0.2);
     color: #4caf50;
+}
+
+.return-btn {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background-color: #64ffda;
+    color: #1a1c20;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.return-btn:hover {
+    background-color: #45e0c0;
+    transform: translateY(-2px);
+}
+
+.return-btn:disabled {
+    background-color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Confirmation Modal */
+.confirmation-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #1a1c20;
+    padding: 2rem;
+    border-radius: 15px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-content h3 {
+    color: #64ffda;
+    margin-bottom: 1rem;
+}
+
+.modal-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn {
+    background-color: #64ffda;
+    color: #1a1c20;
+}
+
+.confirm-btn:hover {
+    background-color: #45e0c0;
+}
+
+.cancel-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .pagination {
@@ -173,10 +277,58 @@ body {
     color: #1a1c20;
 }
 
+/* User Dropdown Styles */
+.user-dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: background 0.3s ease;
+}
+
+.dropdown-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #1a1c20;
+    min-width: 160px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin-top: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-content a {
+    color: white;
+    padding: 0.8rem 1rem;
+    text-decoration: none;
+    display: block;
+    transition: background 0.3s ease;
+}
+
+.dropdown-content a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
 @media (max-width: 768px) {
     .rental-card {
         grid-template-columns: 1fr;
         text-align: center;
+        padding-bottom: 4rem;
     }
 
     .film-poster {
@@ -184,6 +336,39 @@ body {
     }
 
     .rental-status {
-        margin: 0 auto;
+        position: static;
+        margin: 1rem auto;
+    }
+
+    .return-btn {
+        position: relative;
+        margin-top: 1rem;
+    }
+
+    .nav-links {
+        gap: 1rem;
+    }
+
+    .brand {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navigation {
+        padding: 1rem;
+    }
+
+    .history-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .rental-info h3 {
+        font-size: 1.2rem;
+    }
+
+    .film-poster {
+        width: 120px;
+        height: 160px;
     }
 }

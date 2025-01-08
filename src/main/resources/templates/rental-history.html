@@ -6,6 +6,7 @@
     <title>ReelRental - Rental History</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/history.css}">
+
 </head>
 <body>
     <nav class="navigation">
@@ -18,7 +19,13 @@
             </div>
             <div class="user-section">
                 <div class="user-dropdown">
-                    <span id="username" class="dropdown-trigger" th:text="${username}">Username</span>
+                    <span id="username" th:text="${username}" class="dropdown-trigger">Username</span>
+                    <div id="dropdownContent" class="dropdown-content">
+                        <a href="/profile">Profile</a>
+                        <form th:action="@{/logout}" method="post" style="margin: 0;">
+                            <a href="#" onclick="this.closest('form').submit(); return false;">Logout</a>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -32,38 +39,130 @@
             
             <div class="rental-grid">
                 <div th:each="rental : ${rentals}" class="rental-card">
-                    <img th:src="${rental.filmCover} ?: '/api/placeholder/100/150'" 
-                         th:alt="${rental.filmTitle}" 
-                         class="film-poster">
+                    <img th:src="@{'/covers/' + ${rental.filmCover}}" 
+                         th:alt="${rental.filmTitle}"
+                         class="film-poster"
+                         onerror="this.src='/images/default-cover.jpg'">
                     <div class="rental-info">
                         <h3 th:text="${rental.filmTitle}">Film Title</h3>
                         <div class="rental-details">
                             <p>Tanggal Sewa: <span th:text="${#temporals.format(rental.tanggalSewa, 'dd MMMM yyyy')}">Date</span></p>
                             <p>Tanggal Kembali: <span th:text="${rental.tanggalKembali != null ? #temporals.format(rental.tanggalKembali, 'dd MMMM yyyy') : '-'}">Date</span></p>
                             <p>Durasi: <span th:text="${rental.rentalDuration + ' hari'}">Duration</span></p>
-                            <p th:if="${rental.lateFee != null && rental.lateFee > 0}">
+                            <p th:if="${rental.lateFee != null && rental.lateFee > 0}" class="late-fee">
                                 Biaya Keterlambatan: <span th:text="${'Rp ' + #numbers.formatDecimal(rental.lateFee, 0, 'COMMA', 0, 'POINT')}">Fee</span>
                             </p>
                         </div>
                     </div>
                     <div th:class="'rental-status ' + (${rental.status == 'DISEWA' ? 'status-rented' : 'status-returned'})"
                          th:text="${rental.status}">Status</div>
+                    
+                    <!-- Return Button - Only show for active rentals -->
+                    <button th:if="${rental.status == 'DISEWA'}"
+                            class="return-btn"
+                            th:onclick="'showConfirmation(' + ${rental.id} + ')'">
+                        Kembalikan Film
+                    </button>
                 </div>
             </div>
 
+            <!-- Pagination -->
             <div class="pagination" th:if="${totalPages > 1}">
                 <button th:onclick="'window.location.href=\'/history/page?page=' + ${currentPage - 1} + '\''"
-                        th:disabled="${currentPage == 0}">&lt;</button>
+                        th:disabled="${currentPage == 0}"
+                        class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
                 
                 <button th:each="pageNumber : ${#numbers.sequence(0, totalPages - 1)}"
-                        th:class="${pageNumber == currentPage ? 'active' : ''}"
+                        th:class="${pageNumber == currentPage ? 'pagination-btn active' : 'pagination-btn'}"
                         th:onclick="'window.location.href=\'/history/page?page=' + ${pageNumber} + '\''"
                         th:text="${pageNumber + 1}">1</button>
                 
                 <button th:onclick="'window.location.href=\'/history/page?page=' + ${currentPage + 1} + '\''"
-                        th:disabled="${currentPage == totalPages - 1}">&gt;</button>
+                        th:disabled="${currentPage == totalPages - 1}"
+                        class="pagination-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </section>
     </main>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="modal-content">
+            <h3>Konfirmasi Pengembalian</h3>
+            <p>Apakah Anda yakin ingin mengembalikan film ini?</p>
+            <div class="modal-buttons">
+                <button id="cancelReturn" class="modal-btn cancel-btn">Batal</button>
+                <button id="confirmReturn" class="modal-btn confirm-btn">Ya, Kembalikan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('dropdownContent');
+
+            dropdownTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+
+        // Return film functionality
+        let currentBookingId = null;
+        const modal = document.getElementById('confirmationModal');
+
+        function showConfirmation(bookingId) {
+            currentBookingId = bookingId;
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById('cancelReturn').addEventListener('click', function() {
+            modal.style.display = 'none';
+            currentBookingId = null;
+        });
+
+        document.getElementById('confirmReturn').addEventListener('click', function() {
+            if (currentBookingId) {
+                returnFilm(currentBookingId);
+            }
+        });
+
+        function returnFilm(bookingId) {
+            fetch(`/api/bookings/${bookingId}/return`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Film berhasil dikembalikan');
+                    window.location.reload();
+                } else {
+                    throw new Error(data.message || 'Gagal mengembalikan film');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'Terjadi kesalahan saat mengembalikan film. Silakan coba lagi.');
+            })
+            .finally(() => {
+                modal.style.display = 'none';
+                currentBookingId = null;
+            });
+        }
+    </script>
 </body>
 </html>
