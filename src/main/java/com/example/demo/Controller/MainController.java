@@ -264,24 +264,6 @@ public class MainController {
         return "redirect:/home?logout=success";
     }
 
-    // User Profile
-    @GetMapping("/profile")
-    public String profile(Model model, Principal principal) {
-        if (principal == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            var userData = userService.getUserProfile(principal.getName());
-            model.addAttribute("userData", userData);
-            model.addAttribute("rentalHistory", userService.getUserRentalHistory(principal.getName()));
-            return "profile";
-        } catch (Exception e) {
-            logger.error("Error loading profile", e);
-            return "error/500";
-        }
-    }
-
     // API Endpoints
     @GetMapping("/user-data")
     @ResponseBody
