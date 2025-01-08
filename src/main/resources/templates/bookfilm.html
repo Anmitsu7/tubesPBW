@@ -9,13 +9,19 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 5px;
             z-index: 1000;
+            transition: opacity 0.3s ease-in-out;
             opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease-in-out;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification.hidden {
+            display: none;
         }
 
         .notification.success {
@@ -28,15 +34,6 @@
             color: white;
         }
 
-        .notification.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .notification.hidden {
-            display: none;
-        }
-
         .notification-content {
             display: flex;
             flex-direction: column;
@@ -44,12 +41,15 @@
         }
 
         .notification-message {
-            font-size: 1.1em;
             font-weight: bold;
         }
 
         .notification-details {
             font-size: 0.9em;
+        }
+
+        .notification p {
+            margin: 0;
         }
     </style>
 </head>
@@ -73,10 +73,10 @@
         <!-- Notification Popup -->
     <div id="notification" class="notification hidden">
         <div class="notification-content">
-            <span class="notification-message">Film successfully booked!</span>
+            <span class="notification-message"></span>
             <div class="notification-details">
-                <p>Rental Duration: <span id="rentalDuration"></span> days</p>
-                <p>Return Date: <span id="returnDate"></span></p>
+                <p>Durasi Sewa: <span id="rentalDuration"></span> hari</p>
+                <p>Tanggal Kembali: <span id="returnDate"></span></p>
             </div>
         </div>
     </div>
@@ -166,33 +166,119 @@
             </div>
         </div>
     </main>
+<<<<<<< HEAD
+</body>
+<script>
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const duration = form.querySelector('select[name="duration"]').value;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `duration=${duration}`
+            });
+
+=======
 
     <script>
         function showNotification(type, message, duration) {
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             const notification = document.getElementById('notification');
             const messageElement = notification.querySelector('.notification-message');
             const rentalDurationElement = document.getElementById('rentalDuration');
             const returnDateElement = document.getElementById('returnDate');
 
+<<<<<<< HEAD
+=======
             // Debug log
             console.log('Showing notification:', { type, message, duration });
 
             // Remove existing classes and add new ones
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             notification.classList.remove('success', 'error', 'hidden');
             notification.classList.add(type);
             messageElement.textContent = message;
 
+<<<<<<< HEAD
+            const redirectUrl = response.url;
+            const urlParams = new URLSearchParams(new URL(redirectUrl).search);
+
+            if (urlParams.has('success')) {
+                messageElement.textContent = 'Film berhasil dibooking!';
+                notification.classList.add('success');
+
+                // Update stock display
+                const stockElement = document.querySelector('.stock-badge span');
+                if (stockElement) {
+                    const currentStock = parseInt(stockElement.textContent.split(': ')[1]);
+                    stockElement.textContent = `Stock: ${currentStock - 1}`;
+                }
+
+                // Update rental duration and return date
+                if (rentalDurationElement && returnDateElement) {
+                    rentalDurationElement.textContent = duration;
+                    const returnDate = new Date();
+                    returnDate.setDate(returnDate.getDate() + parseInt(duration));
+                    returnDateElement.textContent = returnDate.toISOString().split('T')[0];
+                }
+
+                // Redirect to rentals page after success
+                setTimeout(() => {
+                    window.location.href = '/explore';
+                }, 2000);
+            } else {
+                let errorMessage = 'Gagal membooking film. Silakan coba lagi.';
+                if (urlParams.has('error')) {
+                    const errorType = urlParams.get('error');
+                    switch (errorType) {
+                        case 'outofstock':
+                            errorMessage = 'Maaf, film sedang tidak tersedia.';
+                            break;
+                        case 'alreadybooked':
+                            errorMessage = 'Anda sudah membooking film ini.';
+                            break;
+                    }
+                }
+                messageElement.textContent = errorMessage;
+                notification.classList.add('error');
+=======
             if (type === 'success' && duration) {
                 rentalDurationElement.textContent = duration;
                 const returnDate = new Date();
                 returnDate.setDate(returnDate.getDate() + parseInt(duration));
                 returnDateElement.textContent = returnDate.toLocaleDateString();
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             }
 
-            // Show notification
             notification.classList.add('show');
 
+<<<<<<< HEAD
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 300);
+            }, 5000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            const notification = document.getElementById('notification');
+            const messageElement = notification.querySelector('.notification-message');
+
+            notification.classList.remove('success', 'error', 'hidden');
+            notification.classList.add('error');
+            messageElement.textContent = 'Gagal membooking film. Silakan coba lagi.';
+
+            notification.classList.add('show');
+=======
             // Hide after 5 seconds
+>>>>>>> ea3720d37365f52c84ef374a9ea717d72e9266af
             setTimeout(() => {
                 notification.classList.remove('show');
                 setTimeout(() => {
