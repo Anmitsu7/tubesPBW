@@ -1,5 +1,19 @@
 package com.example.demo.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,30 +28,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dto.FilmDTO;
 import com.example.demo.dto.AktorDTO;
+import com.example.demo.dto.FilmDTO;
 import com.example.demo.dto.GenreDTO;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.FilmMapper;
+import com.example.demo.model.Aktor;
 import com.example.demo.model.Film;
 import com.example.demo.model.Genre;
-import com.example.demo.repository.FilmRepository;
 import com.example.demo.repository.AktorRepository;
+import com.example.demo.repository.FilmRepository;
 import com.example.demo.repository.GenreRepository;
 import com.example.demo.repository.PenyewaanRepository;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
-
-import com.example.demo.model.Aktor;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -91,11 +96,23 @@ public class FilmService {
         try {
             // Handle file upload
             if (coverFile != null && !coverFile.isEmpty()) {
-                String fileName = UUID.randomUUID().toString() + "_" + coverFile.getOriginalFilename();
-                Path filePath = Paths.get(uploadDirectory, "covers", fileName);
-                Files.createDirectories(filePath.getParent());
-                Files.copy(coverFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                filmDTO.setCoverUrl("/covers/" + fileName);
+                String originalFilename = StringUtils.cleanPath(coverFile.getOriginalFilename());
+                String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
+                
+                // Path ke folder covers yang sudah ada
+                Path targetLocation = Paths.get("src/main/resources/static/covers")
+                    .toAbsolutePath()
+                    .normalize();
+                
+                // Pastikan directory ada
+                Files.createDirectories(targetLocation);
+                
+                // Copy file ke lokasi target
+                Path targetPath = targetLocation.resolve(fileName);
+                Files.copy(coverFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+                
+                // Set URL relatif untuk akses web
+                filmDTO.setCoverUrl(  fileName);
             }
 
             Film film = filmMapper.toEntity(filmDTO);
@@ -139,7 +156,7 @@ public class FilmService {
                 String fileName = UUID.randomUUID().toString() + "_" + coverFile.getOriginalFilename();
                 Path filePath = Paths.get(uploadDirectory, "covers", fileName);
                 Files.copy(coverFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                filmDTO.setCoverUrl("/covers/" + fileName);
+                filmDTO.setCoverUrl( fileName);
             }
 
             // Update film data

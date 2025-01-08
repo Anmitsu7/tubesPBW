@@ -1,9 +1,14 @@
 package com.example.demo.dto;
 
-import jakarta.validation.constraints.*;
-import java.nio.file.Paths;
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class FilmDTO {
 
@@ -22,7 +27,7 @@ public class FilmDTO {
     @NotNull(message = "Tahun rilis harus diisi")
     @Min(value = 1900, message = "Tahun rilis tidak valid")
     @Max(value = 2100, message = "Tahun rilis tidak valid")
-    private Integer tahunRilis;
+    private Integer tahun_rilis;
 
     @NotNull(message = "Genre harus dipilih")
     private Long genreId;
@@ -61,12 +66,12 @@ public class FilmDTO {
     public FilmDTO() {
     }
 
-    public FilmDTO(Long id, String judul, String deskripsi, Integer tahunRilis,
+    public FilmDTO(Long id, String judul, String deskripsi, Integer tahun_rilis,
             Long genreId, Integer stok, String coverUrl) {
         this.id = id;
         this.judul = judul;
         this.deskripsi = deskripsi;
-        this.tahunRilis = tahunRilis;
+        this.tahun_rilis = tahun_rilis;
         this.genreId = genreId;
         this.stok = stok;
         this.coverUrl = coverUrl;
@@ -98,11 +103,11 @@ public class FilmDTO {
     }
 
     public Integer getTahunRilis() {
-        return tahunRilis;
+        return tahun_rilis;
     }
 
-    public void setTahunRilis(Integer tahunRilis) {
-        this.tahunRilis = tahunRilis;
+    public void setTahunRilis(Integer tahun_rilis) {
+        this.tahun_rilis = tahun_rilis;
     }
 
     public Long getGenreId() {
@@ -238,7 +243,7 @@ public class FilmDTO {
         return "FilmDTO{" +
                 "id=" + id +
                 ", judul='" + judul + '\'' +
-                ", tahunRilis=" + tahunRilis +
+                ", tahun_rilis=" + tahun_rilis +
                 ", genreId=" + genreId +
                 ", stok=" + stok +
                 ", totalRentals=" + totalRentals +
