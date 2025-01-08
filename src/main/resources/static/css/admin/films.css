@@ -32,6 +32,15 @@ body {
     border-bottom: 1px solid #34495e;
 }
 
+.film-cover {
+    max-width: 100px; 
+    max-height: 150px; 
+    object-fit: cover; 
+    border-radius: 5px; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+
 .nav-links {
     list-style: none;
     padding: 20px 0;

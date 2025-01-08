@@ -132,7 +132,7 @@
                                      onerror="this.src='/images/default-cover.jpg'">
                                 <div class="film-info">
                                     <h3 th:text="${film.judul}">Film Title</h3>
-                                    <p class="genre" th:text="${film.genre?.nama}">Genre</p>
+                                    <!-- <p class="genre" th:text="${genre?.nama}">Genre</p> -->
                                     <p class="year" th:text="${film.tahunRilis}">Year</p>
                                     <p class="stock" th:text="'Stock: ' + ${film.stok}">Stock</p>
                                 </div>
@@ -152,7 +152,7 @@
                                      onerror="this.src='/images/default-cover.jpg'">
                                 <div class="film-info">
                                     <h3 th:text="${film.judul}">Film Title</h3>
-                                    <p class="genre" th:text="${film.genre?.nama}">Genre</p>
+                                    <!-- <p class="genre" th:text="${film.genre?.nama}">Genre</p> -->
                                     <p class="rentals" th:text="${film.totalRentals + ' rentals'}">0 rentals</p>
                                 </div>
                             </div>

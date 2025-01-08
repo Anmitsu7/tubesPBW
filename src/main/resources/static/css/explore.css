@@ -47,17 +47,24 @@ body {
     color: white;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease;
+    position: relative;
 }
 
-.nav-links a:hover {
-    color: #64ffda;
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #64ffda;
+    transition: width 0.3s ease;
 }
 
-.nav-links a.active {
-    color: #64ffda;
+.nav-links a:hover::after {
+    width: 100%;
 }
-
 /* User Dropdown */
 .user-section {
     position: relative;
