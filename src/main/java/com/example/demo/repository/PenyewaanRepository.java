@@ -1,7 +1,10 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.Film;
-import com.example.demo.model.Penyewaan;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +13,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.example.demo.dto.RentalDTO;
+import com.example.demo.model.Film;
+import com.example.demo.model.Penyewaan;
 
 @Repository
 public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
@@ -222,4 +223,12 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
 
     @Query("SELECT YEAR(p.tanggalSewa) as year, COUNT(p) as count FROM Penyewaan p GROUP BY YEAR(p.tanggalSewa)")
     List<Object[]> countRentalsByYear();
+    @Query("SELECT new com.example.demo.dto.RentalDTO(" +
+           "p.id, f.judul, u.username, p.tanggalSewa, p.tanggalKembali, " +
+           "p.status, p.lateFee, p.notes) " +
+           "FROM Penyewaan p " +
+           "JOIN p.film f " +
+           "JOIN p.pengguna u " +
+           "WHERE p.status = 'DISEWA'")
+    List<RentalDTO> findActiveRentals();
 }

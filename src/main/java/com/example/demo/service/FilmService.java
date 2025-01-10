@@ -533,4 +533,9 @@ public class FilmService {
 
         return filmRepository.findAll(spec, pageable);
     }
+    // Add this method to FilmService if it doesn't exist
+public boolean filmExists(Long id) {
+    // Implementation depends on your repository
+    return filmRepository.existsById(id);
+}
 }

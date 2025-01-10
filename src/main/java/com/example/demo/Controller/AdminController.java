@@ -39,6 +39,7 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+    
 
     // Dashboard Page
     @GetMapping("/dashboard")
@@ -108,15 +109,26 @@ public class AdminController {
             return "redirect:/admin/films?error=true";
         }
     }
-
     @PostMapping("/films/delete/{id}")
     public String deleteFilm(@PathVariable Long id) {
         try {
+            // Log the deletion attempt
+            logger.info("Attempting to delete film with ID: {}", id);
+            
+            // Check if film exists
+            if (!filmService.filmExists(id)) {
+                logger.warn("Attempted to delete non-existent film with ID: {}", id);
+                return "redirect:/admin/films?error=Film tidak ditemukan";
+            }
+            
+            // Delete the film
             filmService.deleteFilm(id);
-            return "redirect:/admin/films?success=true";
+            
+            logger.info("Successfully deleted film with ID: {}", id);
+            return "redirect:/admin/films?success=Film berhasil dihapus";
         } catch (Exception e) {
-            logger.error("Error deleting film", e);
-            return "redirect:/admin/films?error=true";
+            logger.error("Error deleting film with ID: " + id, e);
+            return "redirect:/admin/films?error=Gagal menghapus film";
         }
     }
 
