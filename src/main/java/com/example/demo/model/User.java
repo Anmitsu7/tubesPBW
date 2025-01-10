@@ -61,7 +61,7 @@ public class User implements UserDetails {
    private Boolean accountNonLocked = true;
 
    @Column(name = "account_non_expired")
-   private boolean accountNonExpired = true;
+   private Boolean accountNonExpired = true;
 
    @Column(name = "credentials_non_expired")
    private Boolean credentialsNonExpired = true;
@@ -111,7 +111,7 @@ public class User implements UserDetails {
    @Override
    public Collection<? extends GrantedAuthority> getAuthorities() {
        List<GrantedAuthority> authorities = new ArrayList<>();
-       authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+       authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getValue()));
        return authorities;
    }
 
@@ -210,19 +210,19 @@ public class User implements UserDetails {
        this.penyewaan = penyewaan;
    }
 
-   public void setAccountNonLocked(boolean accountNonLocked) {
+   public void setAccountNonLocked(Boolean accountNonLocked) {
        this.accountNonLocked = accountNonLocked;
    }
 
-   public void setAccountNonExpired(boolean accountNonExpired) {
+   public void setAccountNonExpired(Boolean accountNonExpired) {
        this.accountNonExpired = accountNonExpired;
    }
 
-   public void setCredentialsNonExpired(boolean credentialsNonExpired) {
+   public void setCredentialsNonExpired(Boolean credentialsNonExpired) {
        this.credentialsNonExpired = credentialsNonExpired;
    }
 
-   public void setEnabled(boolean enabled) {
+   public void setEnabled(Boolean enabled) {
        this.enabled = enabled;
    }
 

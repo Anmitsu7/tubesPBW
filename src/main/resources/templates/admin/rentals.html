@@ -265,8 +265,8 @@
                 </thead>
                 <tbody>
                     <tr th:each="rental : ${activeRentals}">
-                        <td th:text="${rental.filmTitle}">Film Title</td>
-                        <td th:text="${rental.username}">Username</td>
+                        <td th:text="${rental.film.judul}">Film Title</td>
+                        <td th:text="${rental.pengguna.username}">Username</td>
                         <td th:text="${#temporals.format(rental.tanggalSewa, 'dd-MM-yyyy')}">Rental Date</td>
                         <td th:text="${#temporals.format(rental.tanggalKembali, 'dd-MM-yyyy')}">Due Date</td>
                         <td>

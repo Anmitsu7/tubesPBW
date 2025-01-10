@@ -220,14 +220,9 @@ public class AdminController {
     // Rentals Management
     @GetMapping("/rentals")
     public String showRentalsPage(Model model) {
-        try {
-            model.addAttribute("activeRentals", adminService.getActiveRentals());
-            model.addAttribute("returnedRentals", adminService.getReturnedRentals());
-            return "admin/rentals";
-        } catch (Exception e) {
-            logger.error("Error loading rentals page", e);
-            return "error/500";
-        }
+        model.addAttribute("activeRentals", adminService.getActiveRentals());
+        model.addAttribute("returnedRentals", adminService.getReturnedRentals());
+        return "admin/rentals";
     }
 
     // Reports and Analytics
