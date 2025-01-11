@@ -1,358 +1,369 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Kelola Film - ReelRental</title>
-   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-   <link rel="stylesheet" th:href="@{/css/admin/films.css}">
-  
-    <style>
-        /* Existing styles */
-        .container {
-            display: flex;
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: #2c3e50;
-            color: white;
-            min-height: 100vh;
-            padding: 20px 0;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            background-color: #f5f6fa;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 25px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 450px;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            color: #2c3e50;
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .modal-body {
-            margin-bottom: 25px;
-            color: #34495e;
-        }
-
-        .modal-body p {
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .modal-actions button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .cancel-delete {
-            background-color: #95a5a6;
-            color: white;
-        }
-
-        .cancel-delete:hover {
-            background-color: #7f8c8d;
-        }
-
-        .confirm-delete {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .confirm-delete:hover {
-            background-color: #c0392b;
-        }
-
-        /* Table Buttons */
-        .edit-btn, .delete-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            margin: 0 4px;
-        }
-
-        .edit-btn {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .edit-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Film - ReelRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin/films.css}">
 </head>
 
 <body>
-   <div class="container">
-       <!-- Sidebar -->
-       <nav class="sidebar">
-           <div class="sidebar-header">
-               <h2>ReelRental Admin</h2>
-           </div>
-           <ul class="nav-links">
-               <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
-               <li class="active"><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
-              
-               <li><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
-               <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
-               <li><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>  
-               <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
-            
-           </ul>
-       </nav>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>ReelRental Admin</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+                <li class="active"><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
+                <li><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
+                <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
+                <li><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
+                <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
+            </ul>
+        </nav>
 
-       <!-- Main Content -->
-       <main class="main-content">
-           <!-- Top Navigation -->
-           <header class="top-nav">
-               <div class="search-bar">
-                   <i class="fas fa-search"></i>
-                   <input type="text" placeholder="Search...">
-               </div>
-               <div class="user-nav">
-                   <div class="admin-dropdown">
-                       <span id="adminUsername" class="dropdown-trigger">
-                           <i class="fas fa-user-circle"></i>
-                           <span th:text="${username}">Admin</span>
-                       </span>
-                       <div id="adminDropdown" class="dropdown-content">
-                           <a href="/admin/profile"><i class="fas fa-user-cog"></i> Profile</a>
-                           <form th:action="@{/logout}" method="post">
-                               <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                           </form>
-                       </div>
-                   </div>
-               </div>
-           </header>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <header class="top-nav">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="user-nav">
+                    <div class="admin-dropdown">
+                        <span id="adminUsername" class="dropdown-trigger">
+                            <i class="fas fa-user-circle"></i>
+                            <span th:text="${username}">Admin</span>
+                        </span>
+                        <div id="adminDropdown" class="dropdown-content">
+                            <a href="/admin/profile"><i class="fas fa-user-cog"></i> Profile</a>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-           <!-- Films Content -->
-           <div class="films-content">
-               <header>
-                   <h1>Kelola Film</h1>
-                   <button class="add-button" onclick="document.getElementById('addFilmForm').style.display='block'">
-                       Tambah Film Baru
-                   </button>
-               </header>
+            <!-- Films Content -->
+            <div class="films-content">
+                <header>
+                    <h1>Kelola Film</h1>
+                    <button class="add-button" onclick="document.getElementById('addFilmModal').style.display='block'">
+                        <i class="fas fa-plus"></i> Tambah Film Baru
+                    </button>
+                </header>
 
-               <div class="form-container" id="addFilmForm" style="display: none;">
-                   <h2>Tambah Film Baru</h2>
-                   <form th:action="@{/admin/films/add}" method="POST" enctype="multipart/form-data">
-                       <div class="form-group">
-                           <label for="judul">Judul Film</label>
-                           <input type="text" id="judul" name="judul" required>
-                       </div>
+                <!-- Films Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cover</th>
+                                <th>Judul</th>
+                                <th>Genre</th>
+                                <th>Tahun</th>
+                                <th>Stok</th>
+                                <th>Aktor</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="film : ${films}">
+                                <td><img th:src="@{'/covers/' + ${film.coverUrl}}" alt="Cover Film" class="film-cover">
+                                </td>
+                                <td th:text="${film.judul}"></td>
+                                <td th:text="${film.genreNama}"></td>
+                                <td th:text="${film.tahunRilis}"></td>
+                                <td th:text="${film.stok}"></td>
+                                <td>
+                                    <div class="actors-list">
+                                        <span th:each="aktorName : ${film.aktorNames}" class="actor-tag"
+                                            th:text="${aktorName}">
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="edit-btn" th:onclick="'editFilm(' + ${film.id} + ')'">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete-btn" th:onclick="'deleteFilm(' + ${film.id} + ')'">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-                       <div class="form-group">
-                           <label for="deskripsi">Deskripsi</label>
-                           <textarea id="deskripsi" name="deskripsi" required></textarea>
-                       </div>
+            <!-- Add Film Modal -->
+            <div id="addFilmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Tambah Film Baru</h2>
+                        <span class="close"
+                            onclick="document.getElementById('addFilmModal').style.display='none'">&times;</span>
+                    </div>
+                    <form th:action="@{/admin/films/add}" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="judul">Judul Film</label>
+                            <input type="text" id="judul" name="judul" required>
+                        </div>
 
-                       <div class="form-group">
-                           <label for="genre">Genre</label>
-                           <select id="genre" name="genreId" required>
-                               <option value="">Pilih Genre</option>
-                               <option th:each="genre : ${genres}" 
-                                       th:value="${genre.id}"
-                                       th:text="${genre.nama}">
-                               </option>
-                           </select>
-                       </div>
+                        <div class="form-group">
+                            <label for="deskripsi">Deskripsi</label>
+                            <textarea id="deskripsi" name="deskripsi" required></textarea>
+                        </div>
 
-                       <div class="form-group">
-                           <label for="tahun">Tahun Rilis</label>
-                           <input type="number" id="tahun" name="tahunRilis" required>
-                       </div>
+                        <div class="form-group">
+                            <label for="genre">Genre</label>
+                            <select id="genre" name="genreId" required>
+                                <option value="">Pilih Genre</option>
+                                <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.nama}">
+                                </option>
+                            </select>
+                        </div>
 
-                       <div class="form-group">
-                           <label for="stok">Stok</label>
-                           <input type="number" id="stok" name="stok" required>
-                       </div>
+                        <div class="form-group">
+                            <label for="tahun">Tahun Rilis</label>
+                            <input type="number" id="tahun" name="tahunRilis" required>
+                        </div>
 
-                       <div class="form-group">
-                           <label for="coverImage">Cover Film</label>
-                           <input type="file" id="coverImage" name="coverImage" accept="image/*" required>
-                       </div>
+                        <div class="form-group">
+                            <label for="stok">Stok</label>
+                            <input type="number" id="stok" name="stok" required>
+                        </div>
 
-                       <div class="form-group">
-                           <label>Aktor</label>
-                           <div class="checkbox-group">
-                               <div th:each="aktor : ${actors}">
-                                   <input type="checkbox" 
-                                          name="aktorIds" 
-                                          th:value="${aktor.id}"
-                                          th:id="'aktor' + ${aktor.id}">
-                                   <label th:for="'aktor' + ${aktor.id}" 
-                                          th:text="${aktor.nama}"></label>
-                               </div>
-                           </div>
-                       </div>
+                        <div class="form-group">
+                            <label for="coverImage">Cover Film</label>
+                            <input type="file" id="coverImage" name="coverImage" accept="image/*" required>
+                            <div id="coverPreview"></div>
+                        </div>
 
-                       <div class="form-actions">
-                           <button type="submit">Simpan</button>
-                           <button type="button" onclick="document.getElementById('addFilmForm').style.display='none'">
-                               Batal
-                           </button>
-                       </div>
-                   </form>
-               </div>
+                        <div class="form-group">
+                            <label>Aktor</label>
+                            <div class="checkbox-group">
+                                <div th:each="aktor : ${actors}" class="checkbox-item">
+                                    <input type="checkbox" name="aktorIds" th:value="${aktor.id}"
+                                        th:id="'aktor' + ${aktor.id}">
+                                    <label th:for="'aktor' + ${aktor.id}" th:text="${aktor.nama}"></label>
+                                </div>
+                            </div>
+                        </div>
 
-               <div class="table-container">
-                   <table>
-                       <thead>
-                           <tr>
-                               <th>Cover</th>
-                               <th>Judul</th>
-                               <th>Genre</th>
-                               <th>Tahun</th>
-                               <th>Stok</th>
-                               <th>Aksi</th>
-                           </tr>
-                       </thead>
-                       <tbody>
-                           <tr th:each="film : ${films}">
-                               <td><img th:src="@{'/covers/' + ${film.coverUrl}}" alt="Cover Film" class="film-cover"></td>
-                               <td th:text="${film.judul}"></td>
-                               <td th:text="${film.genreNama}"></td>
-                               <td th:text="${film.tahunRilis}"></td>
-                               <td th:text="${film.stok}"></td>
-                               <td>
-                                   <button class="edit-btn" th:onclick="'editFilm(' + ${film.id} + ')'">Edit</button>
-                                   <button class="delete-btn" th:onclick="'deleteFilm(' + ${film.id} + ')'">Delete</button>
-                               </td>
-                           </tr>
-                       </tbody>
-                   </table>
-               </div>
-           </div>
-
-           <div id="deleteModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <h2>Konfirmasi Hapus</h2>
-                <p>Apakah anda yakin ingin menghapus film ini?</p>
-                <div class="modal-actions">
-                    <form id="deleteFilmForm" method="POST">
-                        <button type="submit" class="confirm-delete">Ya, Hapus</button>
-                        <button type="button" onclick="closeDeleteModal()" class="cancel-delete">Batal</button>
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-primary">Simpan</button>
+                            <button type="button" class="btn-secondary"
+                                onclick="document.getElementById('addFilmModal').style.display='none'">
+                                Batal
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
-        </div>
-           
-       </main>
-   </div>
 
-   <script th:inline="javascript">
-       document.addEventListener('DOMContentLoaded', function () {
-           const dropdownTrigger = document.querySelector('.dropdown-trigger');
-           const dropdownContent = document.getElementById('adminDropdown');
+            <!-- Edit Modal -->
+            <div id="editFilmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Edit Film</h2>
+                        <span class="close">&times;</span>
+                    </div>
+                    <form id="editFilmForm" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" id="editFilmId" name="id">
 
-           dropdownTrigger.addEventListener('click', function (e) {
-               e.stopPropagation();
-               dropdownContent.classList.toggle('show');
-           });
+                        <div class="form-group">
+                            <label for="editJudul">Judul Film</label>
+                            <input type="text" id="editJudul" name="judul" required>
+                        </div>
 
-           document.addEventListener('click', function (e) {
-               if (!e.target.matches('.dropdown-trigger')) {
-                   if (dropdownContent.classList.contains('show')) {
-                       dropdownContent.classList.remove('show');
-                   }
-               }
-           });
-       });
+                        <div class="form-group">
+                            <label for="editDeskripsi">Deskripsi</label>
+                            <textarea id="editDeskripsi" name="deskripsi" required></textarea>
+                        </div>
 
-       function deleteFilm(filmId) {
-    const modal = document.getElementById('deleteModal');
-    const deleteForm = document.getElementById('deleteFilmForm');
-    
-    // Set the form action dynamically
-    deleteForm.action = `/admin/films/delete/${filmId}`;
-    
-    // Show the modal
-    modal.style.display = 'block';
-}
+                        <div class="form-group">
+                            <label for="editGenre">Genre</label>
+                            <select id="editGenre" name="genreId" required>
+                                <option value="">Pilih Genre</option>
+                                <option th:each="genre : ${genres}" th:value="${genre.id}" th:text="${genre.nama}">
+                                </option>
+                            </select>
+                        </div>
 
-function closeDeleteModal() {
-    const modal = document.getElementById('deleteModal');
-    modal.style.display = 'none';
-}
+                        <div class="form-group">
+                            <label for="editTahun">Tahun Rilis</label>
+                            <input type="number" id="editTahun" name="tahunRilis" required>
+                        </div>
 
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('deleteModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
-    }
-}
-   </script>
+                        <div class="form-group">
+                            <label for="editStok">Stok</label>
+                            <input type="number" id="editStok" name="stok" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editCover">Cover Film</label>
+                            <input type="file" id="editCover" name="coverImage" accept="image/*">
+                            <small>Biarkan kosong jika tidak ingin mengubah cover</small>
+                            <div id="editCoverPreviewContainer">
+                                <img id="editCoverPreview" alt="Cover Preview">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Aktor</label>
+                            <div class="checkbox-group" id="editActorsList">
+                                <div th:each="aktor : ${actors}" class="checkbox-item">
+                                    <input type="checkbox" name="aktorIds" th:value="${aktor.id}"
+                                        th:id="'editAktor' + ${aktor.id}">
+                                    <label th:for="'editAktor' + ${aktor.id}" th:text="${aktor.nama}"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                            <button type="button" class="btn-secondary" onclick="closeEditModal()">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Konfirmasi Hapus</h2>
+                        <span class="close" onclick="closeDeleteModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p>Apakah anda yakin ingin menghapus film ini?</p>
+                    </div>
+                    <div class="modal-actions">
+                        <form id="deleteFilmForm" method="POST">
+                            <button type="submit" class="btn-danger">Ya, Hapus</button>
+                            <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Batal</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('adminDropdown');
+
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+
+        function deleteFilm(filmId) {
+            const modal = document.getElementById('deleteModal');
+            const deleteForm = document.getElementById('deleteFilmForm');
+
+            // Set the form action dynamically
+            deleteForm.action = `/admin/films/delete/${filmId}`;
+
+            // Show the modal
+            modal.style.display = 'block';
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function editFilm(filmId) {
+            fetch(`/admin/films/get/${filmId}`)
+                .then(response => response.json())
+                .then(film => {
+                    const form = document.getElementById('editFilmForm');
+                    // Set action URL dengan ID film
+                    form.action = `/admin/films/update/${filmId}`;
+
+                    // Populate form fields
+                    document.getElementById('editFilmId').value = film.id;
+                    document.getElementById('editJudul').value = film.judul;
+                    document.getElementById('editDeskripsi').value = film.deskripsi;
+                    document.getElementById('editGenre').value = film.genreId;
+                    document.getElementById('editTahun').value = film.tahunRilis;
+                    document.getElementById('editStok').value = film.stok;
+
+                    // Show current cover
+                    const coverPreview = document.getElementById('editCoverPreview');
+                    if (film.coverUrl) {
+                        coverPreview.src = '/covers/' + film.coverUrl;
+                        coverPreview.style.display = 'block';
+                    }
+
+                    // Set actor checkboxes
+                    const checkboxes = document.querySelectorAll('#editActorsList input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = film.aktorIds && film.aktorIds.includes(parseInt(checkbox.value));
+                    });
+
+                    // Show modal
+                    document.getElementById('editFilmModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengambil data film');
+                });
+        }
+
+        // Fungsi untuk menutup modal
+        function closeEditModal() {
+            document.getElementById('editFilmModal').style.display = 'none';
+        }
+
+        // Menutup modal ketika mengklik di luar modal
+        window.onclick = function (event) {
+            const modal = document.getElementById('editFilmModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Preview image sebelum upload
+        document.getElementById('editCover').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('editCoverPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
+
 </html>

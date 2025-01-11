@@ -369,14 +369,14 @@ public class AdminService {
         return filmRepository.findMostRentedFilms(PageRequest.of(0, 5));
     }
 
-    private Map<String, Object> getStockAlerts() {
+    public Map<String, Object> getStockAlerts() {
         Map<String, Object> alerts = new HashMap<>();
         alerts.put("lowStock", filmRepository.findLowStockFilms(5));
         alerts.put("outOfStock", filmRepository.findOutOfStockFilms());
         return alerts;
     }
 
-    private Map<String, Object> getRentalTrends() {
+    public Map<String, Object> getRentalTrends() {
         LocalDate today = LocalDate.now();
         List<Map<String, Object>> dailyRentals = 
             penyewaanRepository.getDailyRentals(today.minusDays(30), today);

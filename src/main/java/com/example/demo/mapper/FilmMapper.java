@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 @Component
 public class FilmMapper {
@@ -24,6 +25,7 @@ public class FilmMapper {
 
     public Film toEntity(FilmDTO dto) {
         Film film = new Film();
+        film.setId(dto.getId());
         film.setJudul(dto.getJudul());
         film.setDeskripsi(dto.getDeskripsi());
         film.setTahunRilis(dto.getTahunRilis());
@@ -31,9 +33,11 @@ public class FilmMapper {
         film.setCoverUrl(dto.getCoverUrl());
 
         // Set genre
-        Genre genre = genreRepository.findById(dto.getGenreId())
-                .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
-        film.setGenre(genre);
+        if (dto.getGenreId() != null) {
+            Genre genre = genreRepository.findById(dto.getGenreId())
+                    .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
+            film.setGenre(genre);
+        }
 
         // Set actors
         if (dto.getAktorIds() != null && !dto.getAktorIds().isEmpty()) {
@@ -45,21 +49,31 @@ public class FilmMapper {
 
     public FilmDTO toDto(Film film) {
         FilmDTO dto = new FilmDTO();
+        dto.setId(film.getId());
         dto.setJudul(film.getJudul());
         dto.setDeskripsi(film.getDeskripsi());
         dto.setTahunRilis(film.getTahunRilis());
         dto.setStok(film.getStok());
         dto.setCoverUrl(film.getCoverUrl());
-        dto.setGenreId(film.getGenre().getId());
-        dto.setId(film.getId()); // Tambahkan ini di toDto()
-
-        System.out.println("Film ID: " + film.getId() + ", Cover URL: " + film.getCoverUrl());
-
         
+        // Set genre information
+        if (film.getGenre() != null) {
+            dto.setGenreId(film.getGenre().getId());
+            dto.setGenreNama(film.getGenre().getNama());
+        }
+
+        // Set actor information
         if (film.getActors() != null) {
             dto.setAktorIds(film.getActors().stream()
                     .map(Aktor::getId)
                     .collect(Collectors.toList()));
+            
+            dto.setAktorNames(film.getActors().stream()
+                    .map(Aktor::getNama)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setAktorIds(new ArrayList<>());
+            dto.setAktorNames(new ArrayList<>());
         }
 
         return dto;

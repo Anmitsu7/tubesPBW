@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,7 +93,8 @@
             font-weight: 600;
         }
 
-        td, th {
+        td,
+        th {
             text-align: left;
             padding: 12px;
             border-bottom: 1px solid #e2e8f0;
@@ -104,6 +106,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <nav class="sidebar">
@@ -124,7 +127,7 @@
     <div class="main-content">
         <div class="container mx-auto">
             <h1 class="text-2xl font-bold mb-6">Rental Statistics & Reports</h1>
-            
+
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="card p-4">
@@ -153,7 +156,7 @@
                         <canvas id="monthlyChart"></canvas>
                     </div>
                 </div>
-                
+
                 <div class="card p-4">
                     <h2 class="text-lg font-bold mb-4">Genre Distribution</h2>
                     <div class="chart-container">
@@ -200,11 +203,10 @@
     </div>
 
     <script th:inline="javascript">
-        // All the JavaScript remains the same as before, just updating some styling values
         async function loadTopFilms() {
             const response = await fetch('/api/admin/statistics/top-films');
             const data = await response.json();
-            
+
             const tbody = document.getElementById('topFilmsTable');
             tbody.innerHTML = data.map(film => `
                 <tr>
@@ -218,7 +220,7 @@
         async function loadStockAlerts() {
             const response = await fetch('/api/admin/statistics/stock-alerts');
             const data = await response.json();
-            
+
             const tbody = document.getElementById('stockAlertsTable');
             tbody.innerHTML = data.map(film => `
                 <tr>
@@ -229,8 +231,110 @@
             `).join('');
         }
 
-        // Rest of the JavaScript code remains the same
-        // ... (loadSummary, loadMonthlyChart, loadGenreChart, initDashboard functions)
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeReports();
+        });
+
+        async function initializeReports() {
+            try {
+                const response = await fetch('/api/admin/statistics');
+                const data = await response.json();
+
+                // Update summary cards
+                document.getElementById('totalRentals').textContent = data.totalRentals;
+                document.getElementById('avgDuration').textContent =
+                    data.averageDuration ? `${data.averageDuration.toFixed(1)} days` : '-';
+                document.getElementById('returnRate').textContent =
+                    data.returnRate ? `${data.returnRate.toFixed(1)}%` : '-';
+                document.getElementById('popularGenre').textContent = data.popularGenre || '-';
+
+                // Initialize charts
+                createMonthlyChart(data.monthlyRentals);
+                createGenreChart(data.genreDistribution);
+
+                // Update tables
+                updateTopFilmsTable(data.topFilms);
+                updateStockAlertsTable(data.stockAlerts);
+
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+            }
+        }
+
+        function createMonthlyChart(data) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => moment(item.rental_date).format('MMM')),
+                    datasets: [{
+                        label: 'Total Rentals',
+                        data: data.map(item => item.total_rentals),
+                        borderColor: '#3498db',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGenreChart(data) {
+            const ctx = document.getElementById('genreChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item.genre),
+                    datasets: [{
+                        data: data.map(item => item.rental_count),
+                        backgroundColor: [
+                            '#3498db', '#e74c3c', '#2ecc71', '#f1c40f',
+                            '#9b59b6', '#1abc9c', '#e67e22', '#34495e'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopFilmsTable(data) {
+            const tbody = document.getElementById('topFilmsTable');
+            tbody.innerHTML = data.map(film => `
+        <tr>
+            <td>${film.judul}</td>
+            <td class="text-center">${film.total}</td>
+            <td class="text-center">${film.avg_duration ? film.avg_duration.toFixed(1) : '-'}</td>
+        </tr>
+    `).join('');
+        }
+
+        function updateStockAlertsTable(data) {
+            const tbody = document.getElementById('stockAlertsTable');
+            tbody.innerHTML = data.map(film => `
+        <tr>
+            <td>${film.judul}</td>
+            <td class="text-center">${film.stok}</td>
+            <td class="text-center">${film.stok + (film.disewa || 0)}</td>
+        </tr>
+    `).join('');
+        }
     </script>
 </body>
+
 </html>

@@ -98,21 +98,21 @@ public class FilmService {
             if (coverFile != null && !coverFile.isEmpty()) {
                 String originalFilename = StringUtils.cleanPath(coverFile.getOriginalFilename());
                 String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
-                
+
                 // Path ke folder covers yang sudah ada
                 Path targetLocation = Paths.get("src/main/resources/static/covers")
-                    .toAbsolutePath()
-                    .normalize();
-                
+                        .toAbsolutePath()
+                        .normalize();
+
                 // Pastikan directory ada
                 Files.createDirectories(targetLocation);
-                
+
                 // Copy file ke lokasi target
                 Path targetPath = targetLocation.resolve(fileName);
                 Files.copy(coverFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-                
+
                 // Set URL relatif untuk akses web
-                filmDTO.setCoverUrl(  fileName);
+                filmDTO.setCoverUrl(fileName);
             }
 
             Film film = filmMapper.toEntity(filmDTO);
@@ -140,47 +140,41 @@ public class FilmService {
     }
 
     @Transactional
-    public FilmDTO updateFilm(Long id, FilmDTO filmDTO, MultipartFile coverFile) {
+    public void updateFilm(Long id, FilmDTO filmDTO, MultipartFile coverImage) {
         try {
-            Film existingFilm = filmRepository.findById(id)
+            Film film = filmRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
 
-            // Handle file upload
-            if (coverFile != null && !coverFile.isEmpty()) {
-                // Delete old cover if exists
-                if (existingFilm.getCoverUrl() != null) {
-                    Path oldPath = Paths.get(uploadDirectory, existingFilm.getCoverUrl());
-                    Files.deleteIfExists(oldPath);
-                }
+            film.setJudul(filmDTO.getJudul());
+            film.setDeskripsi(filmDTO.getDeskripsi());
+            film.setTahunRilis(filmDTO.getTahunRilis());
+            film.setStok(filmDTO.getStok());
 
-                String fileName = UUID.randomUUID().toString() + "_" + coverFile.getOriginalFilename();
-                Path filePath = Paths.get(uploadDirectory, "covers", fileName);
-                Files.copy(coverFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-                filmDTO.setCoverUrl( fileName);
+            // Handle genre
+            if (filmDTO.getGenreId() != null) {
+                Genre genre = genreRepository.findById(filmDTO.getGenreId())
+                        .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
+                film.setGenre(genre);
             }
 
-            // Update film data
-            Film film = filmMapper.toEntity(filmDTO);
-            film.setId(id);
-
-            // Update genre
-            Genre genre = genreRepository.findById(filmDTO.getGenreId())
-                    .orElseThrow(() -> new RuntimeException("Genre tidak ditemukan"));
-            film.setGenre(genre);
-
-            // Update actors
-            Set<Aktor> actors = new HashSet<>();
-            for (Long aktorId : filmDTO.getAktorIds()) {
-                Aktor aktor = aktorRepository.findById(aktorId)
-                        .orElseThrow(() -> new RuntimeException("Aktor tidak ditemukan: " + aktorId));
-                actors.add(aktor);
+            // Handle actors
+            if (filmDTO.getAktorIds() != null) {
+                Set<Aktor> actors = new HashSet<>(aktorRepository.findAllById(filmDTO.getAktorIds()));
+                film.setActors(actors);
             }
-            film.setActors(actors);
 
-            Film updatedFilm = filmRepository.save(film);
-            return filmMapper.toDto(updatedFilm);
+            // Handle cover image
+            if (coverImage != null && !coverImage.isEmpty()) {
+                String fileName = UUID.randomUUID().toString() + "_" + coverImage.getOriginalFilename();
+                Path filePath = Paths.get("src/main/resources/static/covers").resolve(fileName);
+                Files.copy(coverImage.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                film.setCoverUrl(fileName);
+            }
+            // Jika tidak ada cover baru diupload, pertahankan cover lama
+            // TIDAK PERLU mengubah coverUrl film
+
+            filmRepository.save(film);
         } catch (Exception e) {
-            logger.error("Error updating film: {}", e.getMessage());
             throw new RuntimeException("Gagal mengupdate film", e);
         }
     }
@@ -265,13 +259,6 @@ public class FilmService {
             logger.error("Error deleting film: {}", e.getMessage());
             throw new RuntimeException("Gagal menghapus film", e);
         }
-    }
-
-    // Query Operations
-    public List<FilmDTO> getAllFilms() {
-        return filmRepository.findAll().stream()
-                .map(filmMapper::toDto)
-                .collect(Collectors.toList());
     }
 
     public List<FilmDTO> getLatestFilms() {
@@ -533,9 +520,15 @@ public class FilmService {
 
         return filmRepository.findAll(spec, pageable);
     }
-    // Add this method to FilmService if it doesn't exist
-public boolean filmExists(Long id) {
-    // Implementation depends on your repository
-    return filmRepository.existsById(id);
-}
+
+    public boolean filmExists(Long id) {
+        // Implementation depends on your repository
+        return filmRepository.existsById(id);
+    }
+
+    public List<FilmDTO> getAllFilms() {
+        return filmRepository.findAllWithGenre().stream()
+                .map(filmMapper::toDto)
+                .collect(Collectors.toList());
+    }
 }

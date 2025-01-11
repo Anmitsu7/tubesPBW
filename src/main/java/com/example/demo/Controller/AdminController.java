@@ -8,6 +8,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -46,20 +48,16 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
-    
 
     // Dashboard Page
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         try {
 
-            
             // Get current logged in username
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             model.addAttribute("username", username);
-
-            
 
             // Add dashboard data
             logger.debug("Getting total films...");
@@ -116,21 +114,22 @@ public class AdminController {
             return "redirect:/admin/films?error=true";
         }
     }
+
     @PostMapping("/films/delete/{id}")
     public String deleteFilm(@PathVariable Long id) {
         try {
             // Log the deletion attempt
             logger.info("Attempting to delete film with ID: {}", id);
-            
+
             // Check if film exists
             if (!filmService.filmExists(id)) {
                 logger.warn("Attempted to delete non-existent film with ID: {}", id);
                 return "redirect:/admin/films?error=Film tidak ditemukan";
             }
-            
+
             // Delete the film
             filmService.deleteFilm(id);
-            
+
             logger.info("Successfully deleted film with ID: {}", id);
             return "redirect:/admin/films?success=Film berhasil dihapus";
         } catch (Exception e) {
@@ -139,7 +138,18 @@ public class AdminController {
         }
     }
 
-    
+    @GetMapping("/films/get/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getFilmById(@PathVariable Long id) {
+        try {
+            FilmDTO film = filmService.getFilmDto(id);
+            return ResponseEntity.ok(film);
+        } catch (Exception e) {
+            logger.error("Error getting film with id: " + id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Terjadi kesalahan saat mengambil data film");
+        }
+    }
 
     // Genre Management
     @GetMapping("/genres")
@@ -320,4 +330,41 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/api/admin/statistics")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getStatistics() {
+        try {
+            Map<String, Object> statistics = new HashMap<>();
+
+            // Menggunakan method yang sudah ada di AdminService
+            statistics.put("totalRentals", adminService.getTotalActiveRentals());
+
+            // Mengambil data dari getMonthlyStats() yang sudah ada
+            Map<String, Object> monthlyStats = adminService.getMonthlyStats();
+            statistics.put("monthlyRentals", monthlyStats.get("totalRentals"));
+            statistics.put("popularFilms", monthlyStats.get("popularFilms"));
+            statistics.put("genreDistribution", monthlyStats.get("rentalsByGenre"));
+            statistics.put("customerStats", monthlyStats.get("customerStats"));
+
+            // Mengambil data dari getSystemMetrics() yang sudah ada
+            Map<String, Object> metrics = adminService.getSystemMetrics();
+            statistics.put("totalRentals", metrics.get("totalRentals"));
+            statistics.put("activeRentals", metrics.get("activeRentals"));
+            statistics.put("overdueRentals", metrics.get("overdueRentals"));
+
+            // Stock alerts dari AdminService
+            Map<String, Object> stockAlerts = adminService.getStockAlerts();
+            statistics.put("stockAlerts", stockAlerts.get("lowStock"));
+            statistics.put("outOfStock", stockAlerts.get("outOfStock"));
+
+            // Rental trends
+            Map<String, Object> trends = adminService.getRentalTrends();
+            statistics.put("dailyRentals", trends.get("dailyData"));
+
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            logger.error("Error getting statistics: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
