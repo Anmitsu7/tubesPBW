@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Rentals - ReelRental</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -264,7 +265,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="rental : ${activeRentals}">
+                    <tr th:each="rental : ${activeRentals}" th:data-rental-id="${rental.id}">
                         <td th:text="${rental.film.judul}">Film Title</td>
                         <td th:text="${rental.pengguna.username}">Username</td>
                         <td th:text="${#temporals.format(rental.tanggalSewa, 'dd-MM-yyyy')}">Rental Date</td>
@@ -290,7 +291,11 @@
     </main>
 
     <script>
-        // Search functionality
+        // Tambahkan CSRF token dari meta tag
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+    
+        // Search functionality (tetap sama)
         document.getElementById('searchRental').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
@@ -302,8 +307,8 @@
                 row.style.display = visible ? '' : 'none';
             });
         });
-
-        // Filter by status
+    
+        // Filter by status (tetap sama)
         document.getElementById('filterStatus').addEventListener('change', function(e) {
             const status = e.target.value;
             const rows = document.querySelectorAll('tbody tr');
@@ -317,20 +322,294 @@
                 }
             });
         });
-
-        // Process return function (to be implemented)
+    
+        // Process return function (diperbarui)
         function processReturn(rentalId) {
             if (confirm('Are you sure you want to process this return?')) {
-                // Implement return logic here
-                console.log('Processing return for rental:', rentalId);
+                fetch(`/admin/rentals/${rentalId}/return`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Remove the row from the table
+                    const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+                    if (row) {
+                        row.remove();
+    
+                        // Update total count
+                        const totalCountElement = document.querySelector('.total-count span');
+                        const currentCount = parseInt(totalCountElement.textContent);
+                        totalCountElement.textContent = currentCount - 1;
+    
+                        // Show success message
+                        showNotification('Rental successfully returned', 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error processing return. Please try again.', 'error');
+                });
+            }
+        }
+    
+        // Fungsi helper untuk menampilkan notifikasi
+        function showNotification(message, type) {
+            // Buat elemen notifikasi
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 4px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideIn 0.5s ease-out;
+            `;
+    
+            // Set warna berdasarkan tipe
+            if (type === 'success') {
+                notification.style.backgroundColor = 'var(--success-color)';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = 'var(--danger-color)';
+            }
+    
+            notification.textContent = message;
+    
+            // Tambahkan ke body
+            document.body.appendChild(notification);
+    
+            // Hapus notifikasi setelah 3 detik
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.5s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 450);
+            }, 3000);
+        }
+    
+        // Fungsi helper untuk menampilkan modal detail rental
+        function showRentalDetailsModal(rentalData) {
+            // Buat modal container
+            const modalContainer = document.createElement('div');
+            modalContainer.className = 'modal-container';
+            modalContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+    
+            // Buat modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            modalContent.style.cssText = `
+                background-color: white;
+                padding: 2rem;
+                border-radius: 8px;
+                max-width: 500px;
+                width: 90%;
+            `;
+    
+            // Isi modal dengan detail rental
+            modalContent.innerHTML = `
+                <h3 style="margin-bottom: 1rem;">Rental Details</h3>
+                <div style="margin-bottom: 0.5rem;"><strong>Film:</strong> ${rentalData.film.judul}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Customer:</strong> ${rentalData.pengguna.username}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Rental Date:</strong> ${new Date(rentalData.tanggalSewa).toLocaleDateString()}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Due Date:</strong> ${new Date(rentalData.tanggalKembali).toLocaleDateString()}</div>
+                <div style="margin-bottom: 0.5rem;"><strong>Status:</strong> ${rentalData.isOverdue ? 'Overdue' : 'Active'}</div>
+                <button onclick="closeModal(this)" style="
+                    margin-top: 1rem;
+                    padding: 0.5rem 1rem;
+                    background-color: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                ">Close</button>
+            `;
+    
+            modalContainer.appendChild(modalContent);
+            document.body.appendChild(modalContainer);
+    
+            // Event listener untuk menutup modal saat klik di luar
+            modalContainer.addEventListener('click', (e) => {
+                if (e.target === modalContainer) {
+                    closeModal(modalContainer);
+                }
+            });
+        }
+    
+        // Fungsi untuk menutup modal
+        function closeModal(element) {
+            const modalContainer = element.closest('.modal-container');
+            if (modalContainer) {
+                modalContainer.remove();
             }
         }
 
-        // View rental details function (to be implemented)
-        function viewRentalDetails(rentalId) {
-            // Implement view details logic here
-            console.log('Viewing details for rental:', rentalId);
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR' 
+            }).format(amount);
         }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function viewRentalDetails(rentalId) {
+            const url = `/admin/rentals/${rentalId}`;
+            console.log('Requesting URL:', url);
+
+            fetch(url)
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text(); // Get error details
+                    console.log('Response status:', response.status);
+                    console.log('Response text:', text);
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+                .then(data => {
+                    console.log('Success data:', data);
+                    const modal = document.createElement('div');
+                    modal.className = 'modal-overlay';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.5);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 1000;
+                    `;
+
+                    const content = document.createElement('div');
+                    content.className = 'modal-content';
+                    content.style.cssText = `
+                        background: white;
+                        padding: 2rem;
+                        border-radius: 8px;
+                        width: 90%;
+                        max-width: 500px;
+                        position: relative;
+                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    `;
+
+                    const rental = data.rental;
+                    content.innerHTML = `
+                        <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">Detail Penyewaan</h2>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Informasi Film</h3>
+                            <p><strong>Judul:</strong> ${rental.film.judul}</p>
+                            <p><strong>Genre:</strong> ${rental.film.genre.nama}</p>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Informasi Penyewaan</h3>
+                            <p><strong>Peminjam:</strong> ${rental.pengguna.username}</p>
+                            <p><strong>Tanggal Sewa:</strong> ${formatDate(rental.tanggalSewa)}</p>
+                            <p><strong>Tanggal Kembali:</strong> ${formatDate(rental.tanggalKembali)}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
+                                    style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem;">
+                                    ${rental.isOverdue ? 'Overdue' : 'Active'}
+                                </span>
+                            </p>
+                            ${rental.isOverdue ? 
+                                `<p><strong>Hari Terlambat:</strong> ${data.daysOverdue} hari</p>` : 
+                                ''}
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Rincian Biaya</h3>
+                            <p><strong>Biaya Sewa:</strong> ${formatCurrency(data.basePrice)}</p>
+                            ${data.lateFee > 0 ? 
+                                `<p><strong>Denda Keterlambatan:</strong> ${formatCurrency(data.lateFee)}</p>` : 
+                                ''}
+                            <p style="margin-top: 0.5rem; font-size: 1.1em;">
+                                <strong>Total:</strong> 
+                                <span style="color: ${data.lateFee > 0 ? 'var(--danger-color)' : 'var(--success-color)'}">
+                                    ${formatCurrency(data.totalPrice)}
+                                </span>
+                            </p>
+                        </div>
+
+                        <button onclick="closeModal(this)" style="
+                            background: var(--primary-color);
+                            color: white;
+                            border: none;
+                            padding: 0.5rem 1rem;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 1rem;
+                            transition: opacity 0.2s;
+                        ">Tutup</button>
+                    `;
+
+                    modal.appendChild(content);
+                    document.body.appendChild(modal);
+
+                    // Close when clicking outside
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) closeModal(modal);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error details:', error);
+                    showNotification('Error loading rental details', 'error');
+                });
+        }
+
+        function closeModal(element) {
+            const modal = element.closest('.modal-overlay');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    
+        // Tambahkan style untuk animasi
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

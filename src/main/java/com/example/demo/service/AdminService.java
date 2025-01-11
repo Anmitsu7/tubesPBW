@@ -214,6 +214,45 @@ public class AdminService {
         return penyewaanRepository.findByStatus("DIKEMBALIKAN");
     }
 
+    @Transactional
+    public void returnRental(Long id) {
+        try {
+            // Find the rental
+            Penyewaan penyewaan = penyewaanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Penyewaan tidak ditemukan"));
+
+            // Update rental status and return date
+            penyewaan.setStatus("DIKEMBALIKAN");
+            penyewaan.setTanggalKembali(LocalDate.now());
+            
+            // Calculate and set late fee if overdue
+            if (penyewaan.isOverdue()) {
+                long daysLate = penyewaan.getDurationInDays() - penyewaan.getRentalDuration();
+                // Get late fee per day from system settings (1000.0 as default)
+                double lateFeePerDay = 1000.0;
+                penyewaan.setLateFee(daysLate * lateFeePerDay);
+            }
+
+            // Update the film stock
+            Film film = penyewaan.getFilm();
+            film.setStok(film.getStok() + 1);
+            filmRepository.save(film);
+
+            // Save the updated rental
+            penyewaanRepository.save(penyewaan);
+            
+            logger.info("Rental {} successfully returned", id);
+        } catch (Exception e) {
+            logger.error("Error processing rental return: {}", e.getMessage());
+            throw new RuntimeException("Gagal memproses pengembalian", e);
+        }
+    }
+
+    public Penyewaan getRentalDetails(Long id) {
+        return penyewaanRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Rental not found"));
+    }
+
     // Stock Management
     @Transactional
     public void updateFilmStock(Long filmId, int adjustment) {
