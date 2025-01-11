@@ -6,6 +6,39 @@
    <title>Kelola Genre - ReelRental</title>
    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
    <link rel="stylesheet" th:href="@{/css/admin/films.css}">
+   <style>
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+   </style>
 </head>
 <body>
    <div class="container">
@@ -17,12 +50,10 @@
            <ul class="nav-links">
                <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
                <li><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
-             
                <li><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
                <li class="active"><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
                <li><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
                <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
-           
            </ul>
        </nav>
 
@@ -58,6 +89,14 @@
                    </button>
                </header>
 
+               <!-- Notifikasi -->
+               <div th:if="${param.success}" class="alert alert-success">
+                   Genre berhasil dihapus!
+               </div>
+               <div th:if="${param.error}" class="alert alert-danger">
+                   Terjadi kesalahan saat menghapus genre.
+               </div>
+
                <div class="form-container" id="addGenreForm" style="display: none;">
                    <h2>Tambah Genre Baru</h2>
                    <form th:action="@{/admin/genres/add}" method="POST">
@@ -88,8 +127,12 @@
                                <td th:text="${genre.id}"></td>
                                <td th:text="${genre.nama}"></td>
                                <td>
-                                   <button class="edit-btn" th:onclick="'editGenre(' + ${genre.id} + ')'">Edit</button>
-                                   <button class="delete-btn" th:onclick="'deleteGenre(' + ${genre.id} + ')'">Delete</button>
+                                   <form th:action="@{/admin/genres/delete/{id}(id=${genre.id})}" 
+                                         method="post" 
+                                         style="display: inline;" 
+                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus genre ini?')">
+                                       <button type="submit" class="delete-btn">Delete</button>
+                                   </form>
                                </td>
                            </tr>
                        </tbody>
