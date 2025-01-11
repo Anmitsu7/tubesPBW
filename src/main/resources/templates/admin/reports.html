@@ -204,7 +204,7 @@
 
     <script th:inline="javascript">
         async function loadTopFilms() {
-            const response = await fetch('/api/admin/statistics/top-films');
+            const response = await fetch('/api/statistics/top-films');
             const data = await response.json();
 
             const tbody = document.getElementById('topFilmsTable');
@@ -218,7 +218,7 @@
         }
 
         async function loadStockAlerts() {
-            const response = await fetch('/api/admin/statistics/stock-alerts');
+            const response = await fetch('/api/statistics/stock-alerts');
             const data = await response.json();
 
             const tbody = document.getElementById('stockAlertsTable');
@@ -232,29 +232,39 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('Chart.js loaded:', typeof Chart !== 'undefined');
             initializeReports();
         });
 
         async function initializeReports() {
             try {
-                const response = await fetch('/api/admin/statistics');
+                console.log('Fetching statistics...');
+                const response = await fetch('/api/statistics');
                 const data = await response.json();
+                console.log('Received data:', data);
 
-                // Update summary cards
-                document.getElementById('totalRentals').textContent = data.totalRentals;
-                document.getElementById('avgDuration').textContent =
+                // Update cards
+                document.getElementById('totalRentals').textContent = data.totalRentals || '-';
+                document.getElementById('avgDuration').textContent = 
                     data.averageDuration ? `${data.averageDuration.toFixed(1)} days` : '-';
-                document.getElementById('returnRate').textContent =
+                document.getElementById('returnRate').textContent = 
                     data.returnRate ? `${data.returnRate.toFixed(1)}%` : '-';
                 document.getElementById('popularGenre').textContent = data.popularGenre || '-';
 
                 // Initialize charts
-                createMonthlyChart(data.monthlyRentals);
-                createGenreChart(data.genreDistribution);
+                console.log('Monthly rentals data:', data.monthlyRentals);
+                if (data.monthlyRentals && data.monthlyRentals.length > 0) {
+                    createMonthlyChart(data.monthlyRentals);
+                }
 
-                // Update tables
-                updateTopFilmsTable(data.topFilms);
-                updateStockAlertsTable(data.stockAlerts);
+                console.log('Genre distribution data:', data.genreDistribution);
+                if (data.genreDistribution && data.genreDistribution.length > 0) {
+                    createGenreChart(data.genreDistribution);
+                }
+
+                // Load tables
+                await loadTopFilms();
+                await loadStockAlerts();
 
             } catch (error) {
                 console.error('Error fetching statistics:', error);
@@ -263,10 +273,12 @@
 
         function createMonthlyChart(data) {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
+            console.log('Creating monthly chart with data:', data);
+            
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: data.map(item => moment(item.rental_date).format('MMM')),
+                    labels: data.map(item => moment(item.rental_date).format('MMM YYYY')),
                     datasets: [{
                         label: 'Total Rentals',
                         data: data.map(item => item.total_rentals),
@@ -311,17 +323,6 @@
                     }
                 }
             });
-        }
-
-        function updateTopFilmsTable(data) {
-            const tbody = document.getElementById('topFilmsTable');
-            tbody.innerHTML = data.map(film => `
-        <tr>
-            <td>${film.judul}</td>
-            <td class="text-center">${film.total}</td>
-            <td class="text-center">${film.avg_duration ? film.avg_duration.toFixed(1) : '-'}</td>
-        </tr>
-    `).join('');
         }
 
         function updateStockAlertsTable(data) {

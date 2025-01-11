@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +40,9 @@ public class AdminService {
 
     @Autowired
     private AktorRepository aktorRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Value("${file.upload.directory}")
     private String uploadDirectory;
@@ -293,39 +298,145 @@ public class AdminService {
 
     public Map<String, Object> getRentalStatistics() {
         Map<String, Object> statistics = new HashMap<>();
-        LocalDate today = LocalDate.now();
-        LocalDate startOfMonth = today.withDayOfMonth(1);
         
-        try {
-            statistics.put("dailyRentals", penyewaanRepository.getDailyRentals(
-                startOfMonth, today));
-            statistics.put("monthlyRentals", penyewaanRepository.getMonthlyRentals(
-                today.getYear()));
-            statistics.put("popularMovies", penyewaanRepository.getPopularMovies(
-                today.getYear(), today.getMonthValue(), PageRequest.of(0, 10)));
-            statistics.put("genrePopularity", penyewaanRepository.getGenrePopularity(
-                today.getYear()));
-            statistics.put("customerAnalytics", penyewaanRepository.getTopCustomers(10));
-        } catch (Exception e) {
-            logger.error("Error getting rental statistics: {}", e.getMessage());
-        }
+        // Data untuk summary cards
+        statistics.put("totalRentals", jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM penyewaan", Integer.class));
+            
+        statistics.put("averageDuration", jdbcTemplate.queryForObject(
+            "SELECT AVG(CASE WHEN tanggal_kembali IS NOT NULL THEN rental_duration END) FROM penyewaan",
+            Double.class));
+            
+        statistics.put("returnRate", jdbcTemplate.queryForObject(
+            "SELECT (COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) * 100.0 / COUNT(*)) FROM penyewaan",
+            Double.class));
+            
+        statistics.put("popularGenre", jdbcTemplate.queryForObject(
+            "SELECT g.nama FROM genre g " +
+            "JOIN film f ON f.genre_id = g.id " +
+            "JOIN penyewaan p ON f.id = p.film_id " +
+            "GROUP BY g.id, g.nama ORDER BY COUNT(*) DESC LIMIT 1",
+            String.class));
+
+        // Data untuk monthly chart
+        List<Map<String, Object>> monthlyRentals = jdbcTemplate.queryForList(
+            "SELECT DATE_TRUNC('month', tanggal_sewa) as rental_date, " +
+            "COUNT(*) as total_rentals " +
+            "FROM penyewaan " +
+            "WHERE tanggal_sewa >= CURRENT_DATE - INTERVAL '12 months' " +
+            "GROUP BY DATE_TRUNC('month', tanggal_sewa) " +
+            "ORDER BY rental_date"
+        );
+        statistics.put("monthlyRentals", monthlyRentals);
+
+        // Data untuk genre chart
+        List<Map<String, Object>> genreDistribution = jdbcTemplate.queryForList(
+            "SELECT g.nama as genre, COUNT(*) as rental_count " +
+            "FROM genre g " +
+            "JOIN film f ON f.genre_id = g.id " +
+            "JOIN penyewaan p ON f.id = p.film_id " +
+            "GROUP BY g.nama " +
+            "ORDER BY rental_count DESC"
+        );
+        statistics.put("genreDistribution", genreDistribution);
+
+        // Data untuk top films table
+        List<Map<String, Object>> topFilms = jdbcTemplate.queryForList(
+            "SELECT f.judul, COUNT(*) as total_rentals, f.stok as current_stock " +
+            "FROM film f " +
+            "JOIN penyewaan p ON f.id = p.film_id " +
+            "GROUP BY f.id " +
+            "ORDER BY total_rentals DESC " +
+            "LIMIT 5"
+        );
+        statistics.put("topFilms", topFilms);
+
+        // Data untuk stock alerts table
+        List<Map<String, Object>> stockAlerts = jdbcTemplate.queryForList(
+            "SELECT f.judul, " +
+            "f.stok as available_stock, " +
+            "(f.stok + COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END)) as total_stock " +
+            "FROM film f " +
+            "LEFT JOIN penyewaan p ON f.id = p.film_id AND p.status = 'DISEWA' " +
+            "GROUP BY f.id " +
+            "HAVING f.stok < 3 " +
+            "ORDER BY available_stock ASC"
+        );
+        statistics.put("stockAlerts", stockAlerts);
+
         return statistics;
     }
 
     public Map<String, Object> generateMonthlyReport(int year, int month) {
         Map<String, Object> report = new HashMap<>();
-        try {
-            report.put("rentalSummary", penyewaanRepository.getRentalSummary(year, month));
-            report.put("popularMovies", penyewaanRepository.getPopularMovies(
-                year, month, PageRequest.of(0, 5)));
-            report.put("customerStats", penyewaanRepository.getTopCustomers(5));
-            report.put("returnRateAnalysis", penyewaanRepository.getReturnRateAnalysis(
-                LocalDate.of(year, month, 1),
-                LocalDate.of(year, month, 1).plusMonths(1).minusDays(1)));
-        } catch (Exception e) {
-            logger.error("Error generating monthly report: {}", e.getMessage());
-        }
+        
+        // Get rental summary for the month
+        Map<String, Object> rentalSummary = jdbcTemplate.queryForMap(
+            """
+            SELECT 
+                COUNT(*) as total_rentals,
+                COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) as returned,
+                COUNT(CASE WHEN status = 'DISEWA' THEN 1 END) as active,
+                COALESCE(SUM(late_fee), 0) as total_late_fees,
+                AVG(CASE 
+                    WHEN tanggal_kembali IS NOT NULL 
+                    THEN DATE_PART('day', tanggal_kembali::timestamp - tanggal_sewa::timestamp)
+                END) as avg_rental_duration
+            FROM penyewaan
+            WHERE EXTRACT(YEAR FROM tanggal_sewa) = ? 
+            AND EXTRACT(MONTH FROM tanggal_sewa) = ?
+            """,
+            year, month
+        );
+        
+        // Get popular movies for the month
+        List<Map<String, Object>> popularMovies = jdbcTemplate.queryForList(
+            """
+            SELECT f.judul, COUNT(*) as rental_count
+            FROM film f
+            JOIN penyewaan p ON f.id = p.film_id
+            WHERE EXTRACT(YEAR FROM p.tanggal_sewa) = ?
+            AND EXTRACT(MONTH FROM p.tanggal_sewa) = ?
+            GROUP BY f.id, f.judul
+            ORDER BY rental_count DESC
+            LIMIT 5
+            """,
+            year, month
+        );
+        
+        // Get top customers for the month
+        List<Map<String, Object>> topCustomers = jdbcTemplate.queryForList(
+            """
+            SELECT u.username, COUNT(*) as rental_count
+            FROM pengguna u
+            JOIN penyewaan p ON u.id = p.pengguna_id
+            WHERE EXTRACT(YEAR FROM p.tanggal_sewa) = ?
+            AND EXTRACT(MONTH FROM p.tanggal_sewa) = ?
+            GROUP BY u.id, u.username
+            ORDER BY rental_count DESC
+            LIMIT 5
+            """,
+            year, month
+        );
+        
+        report.put("rentalSummary", rentalSummary);
+        report.put("popularMovies", popularMovies);
+        report.put("topCustomers", topCustomers);
+        
         return report;
+    }
+
+    public Double calculateAverageDuration() {
+        return penyewaanRepository.findByStatus("DIKEMBALIKAN")
+            .stream()
+            .mapToLong(penyewaan -> {
+                return ChronoUnit.DAYS.between(
+                    penyewaan.getTanggalSewa(),
+                    penyewaan.getTanggalKembali()
+                );
+            })
+            .average()
+            .orElse(0.0);
     }
 
     // User Statistics
