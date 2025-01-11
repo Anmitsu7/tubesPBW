@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -295,76 +296,6 @@ public class AdminController {
         } catch (Exception e) {
             logger.error("Error loading reports page", e);
             return "error/500";
-        }
-    }
-
-    @GetMapping("/reports/rental-statistics")
-    public ResponseEntity<?> getRentalStatistics() {
-        try {
-            return ResponseEntity.ok(adminService.getRentalStatistics());
-        } catch (Exception e) {
-            logger.error("Error fetching rental statistics", e);
-            return ResponseEntity.badRequest().body("Error fetching statistics");
-        }
-    }
-
-    @GetMapping("/reports/monthly")
-    public ResponseEntity<?> getMonthlyReport(@RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month) {
-        try {
-            return ResponseEntity.ok(adminService.getMonthlyReport(year, month));
-        } catch (Exception e) {
-            logger.error("Error generating monthly report", e);
-            return ResponseEntity.badRequest().body("Error generating report");
-        }
-    }
-
-    @GetMapping("/reports/download/monthly")
-    public ResponseEntity<?> downloadMonthlyReport(@RequestParam int year,
-            @RequestParam int month) {
-        try {
-            return adminService.generateMonthlyReportPDF(year, month);
-        } catch (Exception e) {
-            logger.error("Error downloading monthly report", e);
-            return ResponseEntity.badRequest().body("Error downloading report");
-        }
-    }
-
-    @GetMapping("/api/admin/statistics")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> getStatistics() {
-        try {
-            Map<String, Object> statistics = new HashMap<>();
-
-            // Menggunakan method yang sudah ada di AdminService
-            statistics.put("totalRentals", adminService.getTotalActiveRentals());
-
-            // Mengambil data dari getMonthlyStats() yang sudah ada
-            Map<String, Object> monthlyStats = adminService.getMonthlyStats();
-            statistics.put("monthlyRentals", monthlyStats.get("totalRentals"));
-            statistics.put("popularFilms", monthlyStats.get("popularFilms"));
-            statistics.put("genreDistribution", monthlyStats.get("rentalsByGenre"));
-            statistics.put("customerStats", monthlyStats.get("customerStats"));
-
-            // Mengambil data dari getSystemMetrics() yang sudah ada
-            Map<String, Object> metrics = adminService.getSystemMetrics();
-            statistics.put("totalRentals", metrics.get("totalRentals"));
-            statistics.put("activeRentals", metrics.get("activeRentals"));
-            statistics.put("overdueRentals", metrics.get("overdueRentals"));
-
-            // Stock alerts dari AdminService
-            Map<String, Object> stockAlerts = adminService.getStockAlerts();
-            statistics.put("stockAlerts", stockAlerts.get("lowStock"));
-            statistics.put("outOfStock", stockAlerts.get("outOfStock"));
-
-            // Rental trends
-            Map<String, Object> trends = adminService.getRentalTrends();
-            statistics.put("dailyRentals", trends.get("dailyData"));
-
-            return ResponseEntity.ok(statistics);
-        } catch (Exception e) {
-            logger.error("Error getting statistics: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

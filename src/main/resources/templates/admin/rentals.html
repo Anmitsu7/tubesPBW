@@ -596,6 +596,100 @@
                 modal.remove();
             }
         }
+
+        async function initializeReports() {
+            try {
+                console.log('Fetching statistics...');
+                const response = await fetch('/api/admin/statistics');
+                const data = await response.json();
+                console.log('Received data:', data);
+                
+                // Tampilkan summary cards
+                document.getElementById('totalRentals').textContent = data.totalRentals || 0;
+                document.getElementById('avgDuration').textContent = 
+                    data.averageDuration ? `${data.averageDuration.toFixed(1)} days` : '-';
+                document.getElementById('returnRate').textContent = 
+                    data.returnRate ? `${data.returnRate.toFixed(1)}%` : '-';
+                document.getElementById('popularGenre').textContent = data.popularGenre || '-';
+
+                // Inisialisasi grafik bulanan
+                if (data.monthlyRentals && data.monthlyRentals.length > 0) {
+                    createMonthlyChart(data.monthlyRentals);
+                }
+
+                // Inisialisasi grafik genre
+                if (data.genreDistribution && data.genreDistribution.length > 0) {
+                    createGenreChart(data.genreDistribution);
+                }
+
+                // Muat data tabel
+                await loadTopFilms();
+                await loadStockAlerts();
+
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+            }
+        }
+
+        function createMonthlyChart(data) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => {
+                        const date = new Date(item.rental_date);
+                        return date.toLocaleString('default', { month: 'short' });
+                    }),
+                    datasets: [{
+                        label: 'Total Rentals',
+                        data: data.map(item => item.total_rentals),
+                        borderColor: '#3498db',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGenreChart(data) {
+            const ctx = document.getElementById('genreChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item.genre),
+                    datasets: [{
+                        data: data.map(item => item.rental_count),
+                        backgroundColor: [
+                            '#3498db', '#e74c3c', '#2ecc71', '#f1c40f',
+                            '#9b59b6', '#1abc9c', '#e67e22', '#34495e'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeReports();
+        });
     
         // Tambahkan style untuk animasi
         const style = document.createElement('style');
