@@ -1,5 +1,10 @@
 package com.example.demo.controller;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +20,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.dto.AktorDTO;
 import com.example.demo.dto.FilmDTO;
 import com.example.demo.dto.GenreDTO;
+import com.example.demo.model.Penyewaan;
 import com.example.demo.service.AdminService;
 import com.example.demo.service.FilmService;
 import com.example.demo.service.UserService;
@@ -235,6 +242,37 @@ public class AdminController {
         model.addAttribute("activeRentals", adminService.getActiveRentals());
         model.addAttribute("returnedRentals", adminService.getReturnedRentals());
         return "admin/rentals";
+    }
+
+    @PostMapping("/rentals/{id}/return")
+    @ResponseBody
+    public ResponseEntity<String> returnRental(@PathVariable("id") Long id) {
+        try {
+            adminService.returnRental(id);
+            return ResponseEntity.ok("Rental successfully returned");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error processing return: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/rentals/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getRentalDetails(@PathVariable("id") Long id) {
+        try {
+            Penyewaan rental = adminService.getRentalDetails(id);
+            Map<String, Object> response = new HashMap<>();
+            
+            response.put("rental", rental);
+            response.put("basePrice", rental.getBasicPrice());
+            response.put("lateFee", rental.getCurrentLateFee());
+            response.put("totalPrice", rental.getTotalPrice());
+            response.put("daysOverdue", rental.getCurrentDaysOverdue());
+                
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error getting rental details: ", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     // Reports and Analytics

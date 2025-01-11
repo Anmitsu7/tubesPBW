@@ -3,6 +3,9 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 @Data
@@ -13,12 +16,14 @@ public class Penyewaan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "pengguna_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "penyewaans"})
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pengguna_id")
     private User pengguna;
 
-    @ManyToOne
-    @JoinColumn(name = "film_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "penyewaans"})
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "film_id")
     private Film film;
 
     @Column(name = "tanggal_sewa", nullable = false)
@@ -44,6 +49,38 @@ public class Penyewaan {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Transient
+    public String getStatusDisplay() {
+        return isOverdue() ? "Overdue" : "Active";
+    }
+
+    @Transient
+    public double getBasicPrice() {
+        return 5000.0; // Harga dasar sewa
+    }
+
+    @Transient
+    public double getCurrentLateFee() {
+        if (!isOverdue()) return 0.0;
+        
+        LocalDate batasWaktu = tanggalSewa.plusDays(7);
+        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(batasWaktu, LocalDate.now());
+        return Math.max(0, daysLate * 1000.0);
+    }
+
+    @Transient
+    public double getTotalPrice() {
+        return getBasicPrice() + getCurrentLateFee();
+    }
+
+    @Transient
+    public long getCurrentDaysOverdue() {
+        if (!isOverdue()) return 0;
+        
+        LocalDate batasWaktu = tanggalSewa.plusDays(7);
+        return java.time.temporal.ChronoUnit.DAYS.between(batasWaktu, LocalDate.now());
+    }
 
     // Constructors
     public Penyewaan() {
