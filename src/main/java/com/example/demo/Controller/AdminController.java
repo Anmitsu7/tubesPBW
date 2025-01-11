@@ -1,14 +1,11 @@
 package com.example.demo.controller;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -243,7 +240,6 @@ public class AdminController {
             return "redirect:/admin/actors?error=true";
         }
     }
-
     // Users Management
 
     // Rentals Management
@@ -253,6 +249,7 @@ public class AdminController {
         model.addAttribute("returnedRentals", adminService.getReturnedRentals());
         return "admin/rentals";
     }
+    
 
     @PostMapping("/rentals/{id}/return")
     @ResponseBody

@@ -239,16 +239,16 @@
         <div class="page-header">
             <h2>Active Rentals</h2>
             <div class="total-count">
-                Total Active Rentals: <span th:text="${totalActiveRentals}">0</span>
+                Total Active Rentals:  <span th:text="${activeRentals.size()}">0</span>
             </div>
         </div>
 
         <div class="filter-section">
             <input type="text" id="searchRental" placeholder="Search by film title or username...">
             <select id="filterStatus">
-                <option value="all">All Status</option>
-                <option value="normal">Normal</option>
+                <option value="normal" selected>Normal</option>
                 <option value="overdue">Overdue</option>
+                <option value="all">All Status</option>
             </select>
         </div>
 
@@ -609,6 +609,36 @@
                 to { transform: translateX(100%); opacity: 0; }
             }
         `;
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Default filter untuk menampilkan status normal/active saat halaman dimuat
+    filterRentals('normal');
+
+    // Filter functionality
+    document.getElementById('filterStatus').addEventListener('change', function(e) {
+        const status = e.target.value;
+        filterRentals(status);
+    });
+});
+
+function filterRentals(status) {
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const statusElement = row.querySelector('td:nth-child(5) span');
+        const currentStatus = statusElement.textContent.trim().toLowerCase();
+        
+        if (status === 'all') {
+            row.style.display = '';
+        } else if (status === 'normal' && currentStatus === 'active') {
+            row.style.display = '';
+        } else if (status === 'overdue' && currentStatus === 'overdue') {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
         document.head.appendChild(style);
     </script>
 </body>
