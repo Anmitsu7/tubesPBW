@@ -72,6 +72,7 @@ public class SecurityConfig {
                            "/webjars/**",
                            "/fonts/**",
                            "/covers/**",
+                           "/film/**",
                            "/actors/**"
                        ).permitAll()
                        // Admin URLs
