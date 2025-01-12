@@ -1,8 +1,10 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -54,8 +56,8 @@ public class Film {
     )
     private Set<Aktor> actors;
 
-    @OneToMany(mappedBy = "film", fetch = FetchType.LAZY)
-    private Set<Penyewaan> penyewaans;
+    @OneToMany(mappedBy = "film", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Penyewaan> penyewaans = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

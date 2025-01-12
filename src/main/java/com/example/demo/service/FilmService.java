@@ -253,11 +253,22 @@ public class FilmService {
     @Transactional
     public void deleteFilm(Long id) {
         try {
-            logger.info("Deleting film with id: {}", id);
-            filmRepository.deleteById(id);
+            Film film = filmRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Film tidak ditemukan"));
+
+            // Optional: Log penyewaan yang akan dihapus
+            Long activeRentals = penyewaanRepository.countByFilmIdAndStatus(id, "DISEWA");
+            if (activeRentals > 0) {
+                logger.warn("Menghapus film {} yang memiliki {} penyewaan aktif", id, activeRentals);
+            }
+
+            // Delete film - this will cascade to related rentals
+            filmRepository.delete(film);
+
+            logger.info("Film berhasil dihapus: {}", id);
         } catch (Exception e) {
-            logger.error("Error deleting film: {}", e.getMessage());
-            throw new RuntimeException("Gagal menghapus film", e);
+            logger.error("Error menghapus film: {}", e.getMessage());
+            throw new RuntimeException("Gagal menghapus film: " + e.getMessage(), e);
         }
     }
 

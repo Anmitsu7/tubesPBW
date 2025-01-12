@@ -22,52 +22,47 @@
             font-family: system-ui, -apple-system, sans-serif;
         }
 
+        /* Sidebar */
         .sidebar {
             width: 250px;
-            height: 100vh;
+            background: #2c3e50;
+            min-height: 100vh;
+            color: #fff;
             position: fixed;
             left: 0;
             top: 0;
-            background-color: var(--sidebar-bg);
-            color: var(--text-color);
-            padding: 20px 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar-header {
-            padding: 0 20px;
-            margin-bottom: 30px;
-            font-size: 1.5rem;
-            font-weight: bold;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
         }
 
         .nav-links {
             list-style: none;
-            padding: 0;
-            margin: 0;
+            padding: 20px 0;
         }
 
-        .nav-links li a {
+        .nav-links li {
+            padding: 10px 20px;
+            margin: 5px 0;
+        }
+
+        .nav-links li.active {
+            background: #34495e;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
             display: flex;
             align-items: center;
-            padding: 12px 20px;
-            color: var(--text-color);
-            text-decoration: none;
-            transition: background-color 0.3s ease;
+            gap: 10px;
         }
 
-        .nav-links li a:hover {
-            background-color: var(--sidebar-hover);
-        }
-
-        .nav-links li.active a {
-            background-color: var(--active-bg);
-        }
-
-        .nav-links li i {
-            margin-right: 12px;
+        .nav-links i {
             width: 20px;
-            text-align: center;
         }
 
         .main-content {
@@ -111,7 +106,7 @@
     <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
-            ReelRental<br>Admin
+            <h2>ReelRental Admin</h2>
         </div>
         <ul class="nav-links">
             <li><a href="/admin/dashboard"><i class="fas fa-home"></i>Dashboard</a></li>
@@ -245,9 +240,9 @@
 
                 // Update cards
                 document.getElementById('totalRentals').textContent = data.totalRentals || '-';
-                document.getElementById('avgDuration').textContent = 
+                document.getElementById('avgDuration').textContent =
                     data.averageDuration ? `${data.averageDuration.toFixed(1)} days` : '-';
-                document.getElementById('returnRate').textContent = 
+                document.getElementById('returnRate').textContent =
                     data.returnRate ? `${data.returnRate.toFixed(1)}%` : '-';
                 document.getElementById('popularGenre').textContent = data.popularGenre || '-';
 
@@ -274,7 +269,7 @@
         function createMonthlyChart(data) {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             console.log('Creating monthly chart with data:', data);
-            
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
