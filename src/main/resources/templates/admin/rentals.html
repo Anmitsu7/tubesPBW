@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Rentals - ReelRental</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
+    <input type="hidden" name="_csrf" th:value="${_csrf?.token}" />
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -32,57 +33,47 @@
             min-height: 100vh;
         }
 
+        /* Sidebar */
         .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--primary-color);
-            color: var(--text-light);
+            width: 250px;
+            background: #2c3e50;
+            min-height: 100vh;
+            color: #fff;
             position: fixed;
-            height: 100vh;
-            padding: 1rem;
-            transition: all 0.3s ease;
+            left: 0;
+            top: 0;
         }
 
         .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            color: var(--text-light);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
         }
 
         .nav-links {
             list-style: none;
+            padding: 20px 0;
         }
 
         .nav-links li {
-            margin-bottom: 0.5rem;
+            padding: 10px 20px;
+            margin: 5px 0;
+        }
+
+        .nav-links li.active {
+            background: #34495e;
         }
 
         .nav-links a {
+            color: #fff;
+            text-decoration: none;
             display: flex;
             align-items: center;
-            padding: 0.8rem 1rem;
-            color: var(--text-light);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .nav-links .active a {
-            background-color: var(--accent-color);
+            gap: 10px;
         }
 
         .nav-links i {
-            margin-right: 1rem;
             width: 20px;
-            text-align: center;
         }
 
         .main-content {
@@ -136,7 +127,8 @@
             border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #eee;
@@ -152,7 +144,8 @@
             background-color: #f8f9fa;
         }
 
-        .status-active, .status-overdue {
+        .status-active,
+        .status-overdue {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.875rem;
@@ -169,7 +162,8 @@
             color: var(--danger-color);
         }
 
-        .btn-return, .btn-view {
+        .btn-return,
+        .btn-view {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 6px;
@@ -192,7 +186,8 @@
             color: white;
         }
 
-        .btn-return:hover, .btn-view:hover {
+        .btn-return:hover,
+        .btn-view:hover {
             opacity: 0.9;
             transform: translateY(-1px);
         }
@@ -226,12 +221,12 @@
         <ul class="nav-links">
             <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
             <li><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
-        
+
             <li class="active"><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
             <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
             <li><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
             <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
-          
+
         </ul>
     </nav>
 
@@ -239,7 +234,7 @@
         <div class="page-header">
             <h2>Active Rentals</h2>
             <div class="total-count">
-                Total Active Rentals:  <span th:text="${activeRentals.size()}">0</span>
+                Total Active Rentals: <span th:text="${activeRentals.size()}">0</span>
             </div>
         </div>
 
@@ -272,7 +267,7 @@
                         <td th:text="${#temporals.format(rental.tanggalKembali, 'dd-MM-yyyy')}">Due Date</td>
                         <td>
                             <span th:class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
-                                  th:text="${rental.isOverdue ? 'Overdue' : 'Active'}">
+                                th:text="${rental.isOverdue ? 'Overdue' : 'Active'}">
                                 Status
                             </span>
                         </td>
@@ -294,12 +289,12 @@
         // Tambahkan CSRF token dari meta tag
         const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
-    
+
         // Search functionality (tetap sama)
-        document.getElementById('searchRental').addEventListener('input', function(e) {
+        document.getElementById('searchRental').addEventListener('input', function (e) {
             const searchTerm = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
-            
+
             rows.forEach(row => {
                 const title = row.cells[0].textContent.toLowerCase();
                 const username = row.cells[1].textContent.toLowerCase();
@@ -307,12 +302,12 @@
                 row.style.display = visible ? '' : 'none';
             });
         });
-    
+
         // Filter by status (tetap sama)
-        document.getElementById('filterStatus').addEventListener('change', function(e) {
+        document.getElementById('filterStatus').addEventListener('change', function (e) {
             const status = e.target.value;
             const rows = document.querySelectorAll('tbody tr');
-            
+
             rows.forEach(row => {
                 const statusCell = row.cells[4].textContent.trim().toLowerCase();
                 if (status === 'all' || statusCell === status) {
@@ -322,7 +317,7 @@
                 }
             });
         });
-    
+
         // Process return function (diperbarui)
         function processReturn(rentalId) {
             if (confirm('Are you sure you want to process this return?')) {
@@ -333,34 +328,34 @@
                         [header]: token
                     }
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    // Remove the row from the table
-                    const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
-                    if (row) {
-                        row.remove();
-    
-                        // Update total count
-                        const totalCountElement = document.querySelector('.total-count span');
-                        const currentCount = parseInt(totalCountElement.textContent);
-                        totalCountElement.textContent = currentCount - 1;
-    
-                        // Show success message
-                        showNotification('Rental successfully returned', 'success');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Error processing return. Please try again.', 'error');
-                });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        // Remove the row from the table
+                        const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+                        if (row) {
+                            row.remove();
+
+                            // Update total count
+                            const totalCountElement = document.querySelector('.total-count span');
+                            const currentCount = parseInt(totalCountElement.textContent);
+                            totalCountElement.textContent = currentCount - 1;
+
+                            // Show success message
+                            showNotification('Rental successfully returned', 'success');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Error processing return. Please try again.', 'error');
+                    });
             }
         }
-    
+
         // Fungsi helper untuk menampilkan notifikasi
         function showNotification(message, type) {
             // Buat elemen notifikasi
@@ -377,19 +372,19 @@
                 z-index: 1000;
                 animation: slideIn 0.5s ease-out;
             `;
-    
+
             // Set warna berdasarkan tipe
             if (type === 'success') {
                 notification.style.backgroundColor = 'var(--success-color)';
             } else if (type === 'error') {
                 notification.style.backgroundColor = 'var(--danger-color)';
             }
-    
+
             notification.textContent = message;
-    
+
             // Tambahkan ke body
             document.body.appendChild(notification);
-    
+
             // Hapus notifikasi setelah 3 detik
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.5s ease-in';
@@ -398,7 +393,7 @@
                 }, 450);
             }, 3000);
         }
-    
+
         // Fungsi helper untuk menampilkan modal detail rental
         function showRentalDetailsModal(rentalData) {
             // Buat modal container
@@ -416,7 +411,7 @@
                 align-items: center;
                 z-index: 1000;
             `;
-    
+
             // Buat modal content
             const modalContent = document.createElement('div');
             modalContent.className = 'modal-content';
@@ -427,7 +422,7 @@
                 max-width: 500px;
                 width: 90%;
             `;
-    
+
             // Isi modal dengan detail rental
             modalContent.innerHTML = `
                 <h3 style="margin-bottom: 1rem;">Rental Details</h3>
@@ -446,10 +441,10 @@
                     cursor: pointer;
                 ">Close</button>
             `;
-    
+
             modalContainer.appendChild(modalContent);
             document.body.appendChild(modalContainer);
-    
+
             // Event listener untuk menutup modal saat klik di luar
             modalContainer.addEventListener('click', (e) => {
                 if (e.target === modalContainer) {
@@ -457,7 +452,7 @@
                 }
             });
         }
-    
+
         // Fungsi untuk menutup modal
         function closeModal(element) {
             const modalContainer = element.closest('.modal-container');
@@ -467,9 +462,9 @@
         }
 
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR' 
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
             }).format(amount);
         }
 
@@ -486,15 +481,15 @@
             console.log('Requesting URL:', url);
 
             fetch(url)
-            .then(async response => {
-                if (!response.ok) {
-                    const text = await response.text(); // Get error details
-                    console.log('Response status:', response.status);
-                    console.log('Response text:', text);
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+                .then(async response => {
+                    if (!response.ok) {
+                        const text = await response.text(); // Get error details
+                        console.log('Response status:', response.status);
+                        console.log('Response text:', text);
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     console.log('Success data:', data);
                     const modal = document.createElement('div');
@@ -545,17 +540,17 @@
                                     ${rental.isOverdue ? 'Overdue' : 'Active'}
                                 </span>
                             </p>
-                            ${rental.isOverdue ? 
-                                `<p><strong>Hari Terlambat:</strong> ${data.daysOverdue} hari</p>` : 
-                                ''}
+                            ${rental.isOverdue ?
+                            `<p><strong>Hari Terlambat:</strong> ${data.daysOverdue} hari</p>` :
+                            ''}
                         </div>
 
                         <div style="margin-bottom: 1.5rem;">
                             <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Rincian Biaya</h3>
                             <p><strong>Biaya Sewa:</strong> ${formatCurrency(data.basePrice)}</p>
-                            ${data.lateFee > 0 ? 
-                                `<p><strong>Denda Keterlambatan:</strong> ${formatCurrency(data.lateFee)}</p>` : 
-                                ''}
+                            ${data.lateFee > 0 ?
+                            `<p><strong>Denda Keterlambatan:</strong> ${formatCurrency(data.lateFee)}</p>` :
+                            ''}
                             <p style="margin-top: 0.5rem; font-size: 1.1em;">
                                 <strong>Total:</strong> 
                                 <span style="color: ${data.lateFee > 0 ? 'var(--danger-color)' : 'var(--success-color)'}">
@@ -603,12 +598,12 @@
                 const response = await fetch('/api/admin/statistics');
                 const data = await response.json();
                 console.log('Received data:', data);
-                
+
                 // Tampilkan summary cards
                 document.getElementById('totalRentals').textContent = data.totalRentals || 0;
-                document.getElementById('avgDuration').textContent = 
+                document.getElementById('avgDuration').textContent =
                     data.averageDuration ? `${data.averageDuration.toFixed(1)} days` : '-';
-                document.getElementById('returnRate').textContent = 
+                document.getElementById('returnRate').textContent =
                     data.returnRate ? `${data.returnRate.toFixed(1)}%` : '-';
                 document.getElementById('popularGenre').textContent = data.popularGenre || '-';
 
@@ -687,10 +682,10 @@
         }
 
         // Load saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeReports();
         });
-    
+
         // Tambahkan style untuk animasi
         const style = document.createElement('style');
         style.textContent = `
@@ -704,36 +699,37 @@
             }
         `;
 
-        document.addEventListener('DOMContentLoaded', function() {
-    // Default filter untuk menampilkan status normal/active saat halaman dimuat
-    filterRentals('normal');
+        document.addEventListener('DOMContentLoaded', function () {
+            // Default filter untuk menampilkan status normal/active saat halaman dimuat
+            filterRentals('normal');
 
-    // Filter functionality
-    document.getElementById('filterStatus').addEventListener('change', function(e) {
-        const status = e.target.value;
-        filterRentals(status);
-    });
-});
+            // Filter functionality
+            document.getElementById('filterStatus').addEventListener('change', function (e) {
+                const status = e.target.value;
+                filterRentals(status);
+            });
+        });
 
-function filterRentals(status) {
-    const rows = document.querySelectorAll('tbody tr');
-    
-    rows.forEach(row => {
-        const statusElement = row.querySelector('td:nth-child(5) span');
-        const currentStatus = statusElement.textContent.trim().toLowerCase();
-        
-        if (status === 'all') {
-            row.style.display = '';
-        } else if (status === 'normal' && currentStatus === 'active') {
-            row.style.display = '';
-        } else if (status === 'overdue' && currentStatus === 'overdue') {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
+        function filterRentals(status) {
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const statusElement = row.querySelector('td:nth-child(5) span');
+                const currentStatus = statusElement.textContent.trim().toLowerCase();
+
+                if (status === 'all') {
+                    row.style.display = '';
+                } else if (status === 'normal' && currentStatus === 'active') {
+                    row.style.display = '';
+                } else if (status === 'overdue' && currentStatus === 'overdue') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
         }
-    });
-}
         document.head.appendChild(style);
     </script>
 </body>
+
 </html>

@@ -26,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.AktorDTO;
 import com.example.demo.dto.FilmDTO;
 import com.example.demo.dto.GenreDTO;
+import com.example.demo.model.Aktor;
 import com.example.demo.model.Penyewaan;
+import com.example.demo.repository.AktorRepository;
 import com.example.demo.service.AdminService;
 import com.example.demo.service.FilmService;
 import com.example.demo.service.UserService;
@@ -46,6 +48,9 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AktorRepository aktorRepository;
 
     // Dashboard Page
     @GetMapping("/dashboard")
@@ -198,7 +203,16 @@ public class AdminController {
     @GetMapping("/actors")
     public String showActorsPage(Model model) {
         try {
-            model.addAttribute("actors", filmService.getAllActors());
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+
+            List<Aktor> actors = aktorRepository.findAllWithFilms();
+            for (Aktor actor : actors) {
+                actor.setTotalFilms(actor.getFilms().size());
+            }
+
+            model.addAttribute("actors", actors);
+            model.addAttribute("username", username);
             return "admin/actors";
         } catch (Exception e) {
             logger.error("Error loading actors page", e);
@@ -250,7 +264,6 @@ public class AdminController {
         model.addAttribute("returnedRentals", adminService.getReturnedRentals());
         return "admin/rentals";
     }
-    
 
     @PostMapping("/rentals/{id}/return")
     @ResponseBody
@@ -269,13 +282,13 @@ public class AdminController {
         try {
             Penyewaan rental = adminService.getRentalDetails(id);
             Map<String, Object> response = new HashMap<>();
-            
+
             response.put("rental", rental);
             response.put("basePrice", rental.getBasicPrice());
             response.put("lateFee", rental.getCurrentLateFee());
             response.put("totalPrice", rental.getTotalPrice());
             response.put("daysOverdue", rental.getCurrentDaysOverdue());
-                
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error getting rental details: ", e);

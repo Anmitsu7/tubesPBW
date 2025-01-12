@@ -24,7 +24,7 @@ public class Aktor {
     private String fotoUrl;
 
     // Relasi many-to-many dengan Film
-    @ManyToMany(mappedBy = "actors")
+    @ManyToMany(mappedBy = "actors", fetch = FetchType.EAGER)
     private Set<Film> films = new HashSet<>();
 
     // Audit fields
@@ -91,7 +91,7 @@ public class Aktor {
 
     public boolean isInActiveFilm() {
         return this.films.stream()
-            .anyMatch(film -> film.getStok() > 0);
+                .anyMatch(film -> film.getStok() > 0);
     }
 
     // Getters and Setters
@@ -197,8 +197,10 @@ public class Aktor {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Aktor)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Aktor))
+            return false;
         Aktor aktor = (Aktor) o;
         return getId() != null && getId().equals(aktor.getId());
     }

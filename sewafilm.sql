@@ -258,3 +258,17 @@ UPDATE film
 SET cover_url = 'mi_dead_reckoning.jpg',
     deskripsi = 'Ethan Hunt and his IMF team embark on their most dangerous mission yet'
 WHERE id = 10;
+
+
+
+-- Masukin ini aja Ga usah buat db baru
+-- Drop existing constraint
+ALTER TABLE penyewaan 
+DROP CONSTRAINT IF EXISTS fk_penyewaan_film;
+
+-- Add new constraint with cascade delete
+ALTER TABLE penyewaan 
+ADD CONSTRAINT fk_penyewaan_film 
+    FOREIGN KEY (film_id) 
+    REFERENCES film(id)
+    ON DELETE CASCADE;

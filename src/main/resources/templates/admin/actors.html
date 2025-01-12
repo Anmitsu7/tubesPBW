@@ -1,267 +1,271 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kelola Aktor - ReelRental</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" th:href="@{/css/admin/actors.css}">
-  <style>
-       .actors-content header {
-           display: flex;
-           justify-content: space-between;
-           align-items: center;
-       }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Aktor - ReelRental</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/admin/actors.css}">
+    <style>
+        .actors-content header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-       .form-container {
-           position: fixed;
-           top: 50%;
-           left: 50%;
-           transform: translate(-50%, -50%);
-           background: white;
-           padding: 2rem;
-           border-radius: 8px;
-           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-           z-index: 1000;
-           width: 400px;
-       }
+        .form-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 400px;
+        }
 
-       .alert {
-           padding: 15px;
-           margin-bottom: 20px;
-           border: 1px solid transparent;
-           border-radius: 4px;
-       }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
 
-       .alert-success {
-           color: #155724;
-           background-color: #d4edda;
-           border-color: #c3e6cb;
-       }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
 
-       .alert-danger {
-           color: #721c24;
-           background-color: #f8d7da;
-           border-color: #f5c6cb;
-       }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
 
-       .form-group {
-           margin-bottom: 1rem;
-       }
+        .form-group {
+            margin-bottom: 1rem;
+        }
 
-       .form-group label {
-           display: block;
-           margin-bottom: 0.5rem;
-           color: #555;
-           font-weight: 500;
-       }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
 
-       .form-group input {
-           width: 100%;
-           padding: 0.75rem;
-           border: 1px solid #ddd;
-           border-radius: 4px;
-           font-size: 0.9rem;
-       }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
 
-       .form-actions {
-           display: flex;
-           gap: 1rem;
-           margin-top: 1.5rem;
-       }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
 
-       .form-actions button {
-           flex: 1;
-           padding: 0.75rem;
-           border: none;
-           border-radius: 4px;
-           cursor: pointer;
-           font-weight: 500;
-       }
+        .form-actions button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
 
-       .form-actions button[type="submit"] {
-           background: #4CAF50;
-           color: white;
-       }
+        .form-actions button[type="submit"] {
+            background: #4CAF50;
+            color: white;
+        }
 
-       .form-actions button[type="button"] {
-           background: #f44336;
-           color: white;
-       }
+        .form-actions button[type="button"] {
+            background: #f44336;
+            color: white;
+        }
 
-       .add-button {
-           background: #4CAF50;
-           color: white;
-           border: none;
-           padding: 0.75rem 1.5rem;
-           border-radius: 4px;
-           cursor: pointer;
-           font-weight: 500;
-       }
+        .add-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
 
-       .delete-btn {
-           background: #dc3545;
-           color: white;
-           border: none;
-           padding: 0.5rem 1rem;
-           border-radius: 4px;
-           cursor: pointer;
-       }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-       .delete-btn:hover {
-           background: #c82333;
-       }
+        .delete-btn:hover {
+            background: #c82333;
+        }
 
-       .table-container {
-           margin-top: 2rem;
-           background: white;
-           border-radius: 8px;
-           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-       }
+        .table-container {
+            margin-top: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-       table {
-           width: 100%;
-           border-collapse: collapse;
-       }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-       th, td {
-           padding: 1rem;
-           text-align: left;
-           border-bottom: 1px solid #eee;
-       }
+        th,
+        td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
 
-       th {
-           background: #f8f9fa;
-           color: #333;
-           font-weight: 500;
-       }
-  </style>
+        th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="container">
-      <!-- Sidebar -->
-      <nav class="sidebar">
-          <div class="sidebar-header">
-              <h2>ReelRental Admin</h2>
-          </div>
-          <ul class="nav-links">
-              <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
-              <li><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
-              <li><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
-              <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
-              <li class="active"><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
-              <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
-          </ul>
-      </nav>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>ReelRental Admin</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+                <li><a href="/admin/films"><i class="fas fa-film"></i><span>Films</span></a></li>
+                <li><a href="/admin/rentals"><i class="fas fa-receipt"></i><span>Rentals</span></a></li>
+                <li><a href="/admin/genres"><i class="fas fa-tags"></i><span>Genres</span></a></li>
+                <li class="active"><a href="/admin/actors"><i class="fas fa-user-tie"></i><span>Actors</span></a></li>
+                <li><a href="/admin/reports"><i class="fas fa-chart-bar"></i><span>Reports</span></a></li>
+            </ul>
+        </nav>
 
-      <main class="main-content">
-          <header class="top-nav">
-              <div class="search-bar">
-                  <i class="fas fa-search"></i>
-                  <input type="text" placeholder="Search...">
-              </div>
-              <div class="user-nav">
-                  <div class="admin-dropdown">
-                      <span id="adminUsername" class="dropdown-trigger">
-                          <i class="fas fa-user-circle"></i>
-                          <span th:text="${username}">Admin</span>
-                      </span>
-                      <div id="adminDropdown" class="dropdown-content">
-                          <form th:action="@{/logout}" method="post">
-                              <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                          </form>
-                      </div>
-                  </div>
-              </div>
-          </header>
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="user-nav">
+                    <div class="admin-dropdown">
+                        <span id="adminUsername" class="dropdown-trigger">
+                            <i class="fas fa-user-circle"></i>
+                            <span th:text="${username}">Admin</span>
+                        </span>
+                        <div id="adminDropdown" class="dropdown-content">
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-          <div class="actors-content">
-              <header>
-                  <h1>Kelola Aktor</h1>
-                  <button class="add-button" onclick="document.getElementById('addActorForm').style.display='block'">
-                      Tambah Aktor Baru
-                  </button>
-              </header>
+            <div class="actors-content">
+                <header>
+                    <h1>Kelola Aktor</h1>
+                    <button class="add-button" onclick="document.getElementById('addActorForm').style.display='block'">
+                        Tambah Aktor Baru
+                    </button>
+                </header>
 
-              <!-- Notifikasi -->
-              <div th:if="${param.success}" class="alert alert-success">
-                  Aktor berhasil dihapus!
-              </div>
-              <div th:if="${param.error}" class="alert alert-danger">
-                  Terjadi kesalahan saat menghapus aktor.
-              </div>
+                <!-- Notifikasi -->
+                <div th:if="${param.success}" class="alert alert-success">
+                    Aktor berhasil dihapus!
+                </div>
+                <div th:if="${param.error}" class="alert alert-danger">
+                    Terjadi kesalahan saat menghapus aktor.
+                </div>
 
-              <div class="form-container" id="addActorForm" style="display: none;">
-                  <h2>Tambah Aktor Baru</h2>
-                  <form th:action="@{/admin/actors/add}" method="POST">
-                      <div class="form-group">
-                          <label for="nama">Nama Aktor</label>
-                          <input type="text" id="nama" name="nama" required>
-                      </div>
+                <div class="form-container" id="addActorForm" style="display: none;">
+                    <h2>Tambah Aktor Baru</h2>
+                    <form th:action="@{/admin/actors/add}" method="POST">
+                        <div class="form-group">
+                            <label for="nama">Nama Aktor</label>
+                            <input type="text" id="nama" name="nama" required>
+                        </div>
 
-                      <div class="form-group">
-                          <label for="negaraAsal">Negara Asal</label>
-                          <input type="text" id="negaraAsal" name="negaraAsal" required>
-                      </div>
+                        <div class="form-group">
+                            <label for="negaraAsal">Negara Asal</label>
+                            <input type="text" id="negaraAsal" name="negaraAsal" required>
+                        </div>
 
-                      <div class="form-actions">
-                          <button type="submit">Simpan</button>
-                          <button type="button" onclick="document.getElementById('addActorForm').style.display='none'">
-                              Batal
-                          </button>
-                      </div>
-                  </form>
-              </div>
+                        <div class="form-actions">
+                            <button type="submit">Simpan</button>
+                            <button type="button"
+                                onclick="document.getElementById('addActorForm').style.display='none'">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-              <div class="table-container">
-                  <table>
-                      <thead>
-                          <tr>
-                              <th>Nama</th>
-                              <th>Negara Asal</th>
-                              <th>Jumlah Film</th>
-                              <th>Aksi</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          <tr th:each="actor : ${actors}">
-                              <td th:text="${actor.nama}"></td>
-                              <td th:text="${actor.negaraAsal}"></td>
-                              <td th:text="${actor.totalFilms}"></td>
-                              <td>
-                                <form th:action="@{/admin/actors/delete/{id}(id=${actor.id})}" 
-                                method="post" 
-                                style="display: inline;" 
-                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus aktor ini?')">
-                              <button type="submit" class="delete-btn">Delete</button>
-                          </form>
-                              </td>
-                          </tr>
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-      </main>
-  </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Negara Asal</th>
+                                <th>Jumlah Film</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="actor : ${actors}">
+                                <td th:text="${actor.nama}"></td>
+                                <td th:text="${actor.negaraAsal}"></td>
+                                <td th:text="${actor.films != null ? actor.films.size() : 0}"></td>
+                                <td>
+                                    <form th:action="@{/admin/actors/delete/{id}(id=${actor.id})}" method="post"
+                                        style="display: inline;"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus aktor ini?')">
+                                        <button type="submit" class="delete-btn">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
-  <script th:inline="javascript">
-      document.addEventListener('DOMContentLoaded', function () {
-          const dropdownTrigger = document.querySelector('.dropdown-trigger');
-          const dropdownContent = document.getElementById('adminDropdown');
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownTrigger = document.querySelector('.dropdown-trigger');
+            const dropdownContent = document.getElementById('adminDropdown');
 
-          dropdownTrigger.addEventListener('click', function (e) {
-              e.stopPropagation();
-              dropdownContent.classList.toggle('show');
-          });
+            dropdownTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
 
-          document.addEventListener('click', function (e) {
-              if (!e.target.matches('.dropdown-trigger')) {
-                  if (dropdownContent.classList.contains('show')) {
-                      dropdownContent.classList.remove('show');
-                  }
-              }
-          });
-      });
-  </script>
+            document.addEventListener('click', function (e) {
+                if (!e.target.matches('.dropdown-trigger')) {
+                    if (dropdownContent.classList.contains('show')) {
+                        dropdownContent.classList.remove('show');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
+
 </html>
