@@ -299,71 +299,33 @@ public class AdminService {
     public Map<String, Object> getRentalStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         
-        // Data untuk summary cards
         statistics.put("totalRentals", jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM penyewaan", Integer.class));
             
         statistics.put("averageDuration", jdbcTemplate.queryForObject(
-            "SELECT AVG(CASE WHEN tanggal_kembali IS NOT NULL THEN rental_duration END) FROM penyewaan",
-            Double.class));
+            """
+            SELECT AVG(rental_duration)
+            FROM penyewaan
+            WHERE status = 'DIKEMBALIKAN'
+            """, Double.class));
             
         statistics.put("returnRate", jdbcTemplate.queryForObject(
-            "SELECT (COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) * 100.0 / COUNT(*)) FROM penyewaan",
-            Double.class));
+            """
+            SELECT (COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) * 100.0 / COUNT(*))
+            FROM penyewaan
+            """, Double.class));
             
         statistics.put("popularGenre", jdbcTemplate.queryForObject(
-            "SELECT g.nama FROM genre g " +
-            "JOIN film f ON f.genre_id = g.id " +
-            "JOIN penyewaan p ON f.id = p.film_id " +
-            "GROUP BY g.id, g.nama ORDER BY COUNT(*) DESC LIMIT 1",
-            String.class));
-
-        // Data untuk monthly chart
-        List<Map<String, Object>> monthlyRentals = jdbcTemplate.queryForList(
-            "SELECT DATE_TRUNC('month', tanggal_sewa) as rental_date, " +
-            "COUNT(*) as total_rentals " +
-            "FROM penyewaan " +
-            "WHERE tanggal_sewa >= CURRENT_DATE - INTERVAL '12 months' " +
-            "GROUP BY DATE_TRUNC('month', tanggal_sewa) " +
-            "ORDER BY rental_date"
-        );
-        statistics.put("monthlyRentals", monthlyRentals);
-
-        // Data untuk genre chart
-        List<Map<String, Object>> genreDistribution = jdbcTemplate.queryForList(
-            "SELECT g.nama as genre, COUNT(*) as rental_count " +
-            "FROM genre g " +
-            "JOIN film f ON f.genre_id = g.id " +
-            "JOIN penyewaan p ON f.id = p.film_id " +
-            "GROUP BY g.nama " +
-            "ORDER BY rental_count DESC"
-        );
-        statistics.put("genreDistribution", genreDistribution);
-
-        // Data untuk top films table
-        List<Map<String, Object>> topFilms = jdbcTemplate.queryForList(
-            "SELECT f.judul, COUNT(*) as total_rentals, f.stok as current_stock " +
-            "FROM film f " +
-            "JOIN penyewaan p ON f.id = p.film_id " +
-            "GROUP BY f.id " +
-            "ORDER BY total_rentals DESC " +
-            "LIMIT 5"
-        );
-        statistics.put("topFilms", topFilms);
-
-        // Data untuk stock alerts table
-        List<Map<String, Object>> stockAlerts = jdbcTemplate.queryForList(
-            "SELECT f.judul, " +
-            "f.stok as available_stock, " +
-            "(f.stok + COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END)) as total_stock " +
-            "FROM film f " +
-            "LEFT JOIN penyewaan p ON f.id = p.film_id AND p.status = 'DISEWA' " +
-            "GROUP BY f.id " +
-            "HAVING f.stok < 3 " +
-            "ORDER BY available_stock ASC"
-        );
-        statistics.put("stockAlerts", stockAlerts);
-
+            """
+            SELECT g.nama 
+            FROM genre g
+            JOIN film f ON f.genre_id = g.id
+            JOIN penyewaan p ON p.film_id = f.id
+            GROUP BY g.id, g.nama
+            ORDER BY COUNT(*) DESC
+            LIMIT 1
+            """, String.class));
+    
         return statistics;
     }
 
@@ -454,6 +416,22 @@ public class AdminService {
             .collect(Collectors.toList());
     }
 
+    public List<Map<String, Object>> getTopFilms() {
+        return jdbcTemplate.queryForList(
+            """
+            SELECT 
+                f.judul,
+                COUNT(p.id) as totalRentals,
+                f.stok as currentStock
+            FROM film f
+            LEFT JOIN penyewaan p ON p.film_id = f.id
+            GROUP BY f.id, f.judul, f.stok
+            ORDER BY COUNT(p.id) DESC
+            LIMIT 5
+            """
+        );
+    }
+
     // System Status
     public Map<String, Object> getSystemStatus() {
         Map<String, Object> status = new HashMap<>();
@@ -480,11 +458,20 @@ public class AdminService {
         return filmRepository.findMostRentedFilms(PageRequest.of(0, 5));
     }
 
-    public Map<String, Object> getStockAlerts() {
-        Map<String, Object> alerts = new HashMap<>();
-        alerts.put("lowStock", filmRepository.findLowStockFilms(5));
-        alerts.put("outOfStock", filmRepository.findOutOfStockFilms());
-        return alerts;
+    public List<Map<String, Object>> getStockAlerts() {
+        return jdbcTemplate.queryForList(
+            """
+            SELECT 
+                f.judul,
+                f.stok as availableStock,
+                (f.stok + COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END)) as totalStock
+            FROM film f
+            LEFT JOIN penyewaan p ON p.film_id = f.id AND p.status = 'DISEWA'
+            GROUP BY f.id, f.judul, f.stok
+            HAVING f.stok < 3
+            ORDER BY f.stok ASC
+            """
+        );
     }
 
     public Map<String, Object> getRentalTrends() {

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,65 +28,130 @@ public class StatisticsController {
    @Autowired
    private AdminService adminService;
 
+   @Autowired
+   private JdbcTemplate jdbcTemplate;
+
    @GetMapping
    public ResponseEntity<Map<String, Object>> getStatistics() {
-       try {
-           Map<String, Object> statistics = new HashMap<>();
+        try {
+            Map<String, Object> statistics = new HashMap<>();
 
-           // Get system metrics
-           Map<String, Object> metrics = adminService.getSystemMetrics();
-           statistics.put("totalRentals", metrics.get("totalRentals"));
-           statistics.put("averageDuration", adminService.calculateAverageDuration());
-           statistics.put("returnRate", metrics.get("returnRate"));
+            // Data untuk summary cards menggunakan query langsung
+            statistics.put("totalRentals", jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM penyewaan", Integer.class));
+                
+            statistics.put("averageDuration", jdbcTemplate.queryForObject(
+                "SELECT AVG(rental_duration) FROM penyewaan WHERE status = 'DIKEMBALIKAN'", 
+                Double.class));
+                
+            statistics.put("returnRate", jdbcTemplate.queryForObject(
+                "SELECT (COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) * 100.0 / COUNT(*)) FROM penyewaan",
+                Double.class));
 
-           // Get monthly stats and extract data
-           Map<String, Object> monthlyStats = adminService.getMonthlyStats();
-           
-           // Get popular genre
-           List<Map<String, Object>> genreStats = (List<Map<String, Object>>) monthlyStats.get("rentalsByGenre");
-           if (genreStats != null && !genreStats.isEmpty()) {
-               statistics.put("popularGenre", genreStats.get(0).get("genre"));
-           }
+            // Monthly Rentals Chart Data
+            List<Map<String, Object>> monthlyRentals = jdbcTemplate.queryForList(
+                """
+                SELECT 
+                    DATE_TRUNC('month', tanggal_sewa) as rental_date,
+                    COUNT(*) as total_rentals
+                FROM penyewaan
+                WHERE tanggal_sewa >= CURRENT_DATE - INTERVAL '12 months'
+                GROUP BY DATE_TRUNC('month', tanggal_sewa)
+                ORDER BY rental_date
+                """
+            );
+            statistics.put("monthlyRentals", monthlyRentals);
 
-           // Add monthly rentals trend data
-           Map<String, Object> trends = adminService.getRentalTrends();
-           statistics.put("monthlyRentals", trends.get("dailyData"));
-           
-           // Add genre distribution
-           statistics.put("genreDistribution", monthlyStats.get("rentalsByGenre"));
+            // Genre Distribution Chart Data
+            List<Map<String, Object>> genreDistribution = jdbcTemplate.queryForList(
+                """
+                SELECT 
+                    g.nama as genre,
+                    COUNT(p.id) as rental_count
+                FROM genre g
+                JOIN film f ON f.genre_id = g.id
+                JOIN penyewaan p ON p.film_id = f.id
+                GROUP BY g.nama
+                ORDER BY rental_count DESC
+                """
+            );
+            statistics.put("genreDistribution", genreDistribution);
 
-           // Add tables data
-           statistics.put("topFilms", monthlyStats.get("popularFilms"));
-           statistics.put("stockAlerts", adminService.getStockAlerts().get("lowStock"));
+            // Popular Genre
+            String popularGenre = jdbcTemplate.queryForObject(
+                """
+                SELECT g.nama
+                FROM genre g
+                JOIN film f ON f.genre_id = g.id
+                JOIN penyewaan p ON p.film_id = f.id
+                GROUP BY g.nama
+                ORDER BY COUNT(*) DESC
+                LIMIT 1
+                """,
+                String.class
+            );
+            statistics.put("popularGenre", popularGenre);
 
-           return ResponseEntity.ok(statistics);
-       } catch (Exception e) {
-           logger.error("Error getting statistics: ", e);
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-       }
-   }
+            // Top Films Table
+            List<Map<String, Object>> topFilms = jdbcTemplate.queryForList(
+                """
+                SELECT 
+                    f.judul,
+                    COUNT(p.id) as totalRentals,
+                    f.stok as currentStock
+                FROM film f
+                LEFT JOIN penyewaan p ON p.film_id = f.id
+                GROUP BY f.id, f.judul, f.stok
+                ORDER BY COUNT(p.id) DESC
+                LIMIT 5
+                """
+            );
+            statistics.put("topFilms", topFilms);
 
-   @GetMapping("/top-films") 
-   public ResponseEntity<?> getTopFilms() {
-       try {
-           Map<String, Object> monthlyStats = adminService.getMonthlyStats();
-           return ResponseEntity.ok(monthlyStats.get("popularFilms"));
-       } catch (Exception e) {
-           logger.error("Error getting top films: ", e);
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-       }
-   }
+            // Stock Alerts Table
+            List<Map<String, Object>> stockAlerts = jdbcTemplate.queryForList(
+                """
+                SELECT 
+                    f.judul,
+                    f.stok as availableStock,
+                    (f.stok + COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END)) as totalStock
+                FROM film f
+                LEFT JOIN penyewaan p ON p.film_id = f.id AND p.status = 'DISEWA'
+                GROUP BY f.id, f.judul, f.stok
+                HAVING f.stok < 3
+                ORDER BY f.stok ASC
+                """
+            );
+            statistics.put("stockAlerts", stockAlerts);
 
-   @GetMapping("/stock-alerts")
-   public ResponseEntity<?> getStockAlerts() {
-       try {
-           Map<String, Object> stockAlerts = adminService.getStockAlerts();
-           return ResponseEntity.ok(stockAlerts.get("lowStock"));
-       } catch (Exception e) {
-           logger.error("Error getting stock alerts: ", e);
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-       }
-   }
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            logger.error("Error getting statistics: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+   @GetMapping("/top-films")
+    public ResponseEntity<?> getTopFilms() {
+        try {
+            List<Map<String, Object>> topFilms = adminService.getTopFilms();
+            return ResponseEntity.ok(topFilms);
+        } catch (Exception e) {
+            logger.error("Error getting top films: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/stock-alerts")
+    public ResponseEntity<?> getStockAlerts() {
+        try {
+            List<Map<String, Object>> alerts = adminService.getStockAlerts();
+            return ResponseEntity.ok(alerts);
+        } catch (Exception e) {
+            logger.error("Error getting stock alerts: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
    @GetMapping("/rental-statistics")
    public ResponseEntity<?> getRentalStatistics() {
