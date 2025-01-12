@@ -9,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --sidebar-bg: #2D3743;
@@ -122,6 +123,11 @@
     <div class="main-content">
         <div class="container mx-auto">
             <h1 class="text-2xl font-bold mb-6">Rental Statistics & Reports</h1>
+            <div class="card p-4">
+                <h2 class="text-lg font-bold mb-4"></h2>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    onclick="downloadMonthlyReport()">Download Report</button>
+            </div><br>
 
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -199,31 +205,82 @@
 
     <script th:inline="javascript">
         async function loadTopFilms() {
-            const response = await fetch('/api/statistics/top-films');
-            const data = await response.json();
+            try {
+                const response = await fetch('/api/statistics/top-films');
+                const data = await response.json();
+                console.log('Top films data received:', data);
 
-            const tbody = document.getElementById('topFilmsTable');
-            tbody.innerHTML = data.map(film => `
-                <tr>
-                    <td>${film.judul}</td>
-                    <td class="text-center">${film.totalRentals}</td>
-                    <td class="text-center">${film.currentStock}</td>
-                </tr>
-            `).join('');
+                const tbody = document.getElementById('topFilmsTable');
+                tbody.innerHTML = data.map(film => `
+            <tr>
+                <td>${film.judul}</td>
+                <td class="text-center">${parseInt(film.totalRentals) || 0}</td>
+                <td class="text-center">${parseInt(film.currentStock) || 0}</td>
+            </tr>
+        `).join('');
+            } catch (error) {
+                console.error('Error loading top films:', error);
+                document.getElementById('topFilmsTable').innerHTML = `
+            <tr><td colspan="3" class="text-center text-red-500">Error loading data</td></tr>
+        `;
+            }
         }
 
         async function loadStockAlerts() {
-            const response = await fetch('/api/statistics/stock-alerts');
-            const data = await response.json();
+            try {
+                const response = await fetch('/api/statistics/stock-alerts');
+                const data = await response.json();
 
-            const tbody = document.getElementById('stockAlertsTable');
-            tbody.innerHTML = data.map(film => `
-                <tr>
-                    <td>${film.judul}</td>
-                    <td class="text-center">${film.availableStock}</td>
-                    <td class="text-center">${film.totalStock}</td>
-                </tr>
-            `).join('');
+                const tbody = document.getElementById('stockAlertsTable');
+                tbody.innerHTML = data.map(film => `
+            <tr>
+                <td>${film.judul}</td>
+                <td class="text-center">${parseInt(film.availableStock) || 0}</td>
+                <td class="text-center">${parseInt(film.totalStock) || 0}</td>
+            </tr>
+        `).join('');
+            } catch (error) {
+                console.error('Error loading stock alerts:', error);
+                document.getElementById('stockAlertsTable').innerHTML = `
+            <tr><td colspan="3" class="text-center text-red-500">Error loading data</td></tr>
+        `;
+            }
+        }
+
+        async function initializeReports() {
+            try {
+                const response = await fetch('/api/statistics');
+                const data = await response.json();
+
+                // Update summary cards with fallback values
+                document.getElementById('totalRentals').textContent = data.totalRentals || '0';
+                document.getElementById('avgDuration').textContent =
+                    data.averageDuration ? `${Number(data.averageDuration).toFixed(1)} days` : '0 days';
+                document.getElementById('returnRate').textContent =
+                    data.returnRate ? `${Number(data.returnRate).toFixed(1)}%` : '0%';
+                document.getElementById('popularGenre').textContent = data.popularGenre || 'No data';
+
+                // Load charts only if data exists
+                if (data.monthlyRentals?.length > 0) {
+                    createMonthlyChart(data.monthlyRentals);
+                }
+
+                if (data.genreDistribution?.length > 0) {
+                    createGenreChart(data.genreDistribution);
+                }
+
+                // Load tables
+                await loadTopFilms();
+                await loadStockAlerts();
+
+            } catch (error) {
+                console.error('Error initializing reports:', error);
+                // Show error message to user
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative';
+                errorMessage.textContent = 'Error loading statistics. Please try refreshing the page.';
+                document.querySelector('.container').prepend(errorMessage);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -264,6 +321,10 @@
             } catch (error) {
                 console.error('Error fetching statistics:', error);
             }
+        }
+
+        function downloadReport() {
+            window.location.href = '/admin/reports/download';
         }
 
         function createMonthlyChart(data) {
@@ -330,6 +391,55 @@
         </tr>
     `).join('');
         }
+
+        function downloadMonthlyReport() {
+    // Get the main content element
+    const content = document.querySelector('.main-content');
+    
+    // Get current date for filename
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const filename = `ReelRental_Report_${year}_${month}.pdf`;
+    
+    // Configure html2pdf options
+    const opt = {
+        margin: 1,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            letterRendering: true
+        },
+        jsPDF: { 
+            unit: 'in', 
+            format: 'a4', 
+            orientation: 'portrait' 
+        }
+    };
+
+    // Temporarily modify content for better PDF output
+    const originalStyle = content.style.cssText;
+    content.style.margin = '0';
+    content.style.padding = '20px';
+    content.style.background = 'white';
+
+    // Generate PDF
+    html2pdf().set(opt).from(content).save()
+        .then(() => {
+            // Restore original styling
+            content.style.cssText = originalStyle;
+        })
+        .catch(error => {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF report');
+            // Restore original styling
+            content.style.cssText = originalStyle;
+        });
+}
+
     </script>
 </body>
 
