@@ -254,6 +254,153 @@
                 // Implementasi search sesuai kebutuhan
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-bar input');
+    
+    // Tambahkan clear button
+    const searchBar = document.querySelector('.search-bar');
+    const clearButton = document.createElement('i');
+    clearButton.className = 'fas fa-times';
+    clearButton.style.cssText = `
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+        display: none;
+        padding: 5px;
+    `;
+    searchBar.style.position = 'relative';
+    searchBar.appendChild(clearButton);
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        clearButton.style.display = searchTerm ? 'block' : 'none';
+
+        // Search in Latest Films
+        searchInSection('.latest-films .film-card', searchTerm);
+        
+        // Search in Popular Films
+        searchInSection('.popular-films .film-card', searchTerm);
+        
+        // Search in Recent Rentals
+        searchInSection('.recent-rentals .rental-item', searchTerm);
+        
+        // Update empty states for each section
+        updateEmptyState('.latest-films', 'Latest Films');
+        updateEmptyState('.popular-films', 'Popular Films');
+        updateEmptyState('.recent-rentals', 'Recent Rentals');
+    });
+
+    // Clear button functionality
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        this.style.display = 'none';
+        searchInput.focus();
+    });
+});
+
+function searchInSection(selector, searchTerm) {
+    const items = document.querySelectorAll(selector);
+    items.forEach(item => {
+        const textContent = item.textContent.toLowerCase();
+        const match = textContent.includes(searchTerm);
+        
+        if (match) {
+            item.style.display = '';
+            // Add highlight animation
+            item.style.animation = 'highlightItem 1s ease';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function updateEmptyState(sectionSelector, sectionName) {
+    const section = document.querySelector(sectionSelector);
+    const items = section.querySelectorAll('.film-card, .rental-item');
+    const grid = section.querySelector('.films-grid, .rentals-list');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        if (item.style.display !== 'none') {
+            visibleCount++;
+        }
+    });
+
+    // Remove existing empty state message if exists
+    const existingMessage = section.querySelector('.empty-state');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    if (visibleCount === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <div style="
+                text-align: center;
+                padding: 20px;
+                color: #666;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin: 10px 0;
+            ">
+                <i class="fas fa-search" style="
+                    font-size: 24px;
+                    margin-bottom: 10px;
+                    color: #999;
+                "></i>
+                <p>No matches found in ${sectionName}</p>
+            </div>
+        `;
+        grid.appendChild(emptyState);
+    }
+}
+
+// Add necessary styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes highlightItem {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    .film-card, .rental-item {
+        transition: all 0.3s ease;
+    }
+
+    .empty-state {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .search-bar {
+        position: relative;
+    }
+
+    .search-bar input:focus {
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+    }
+
+    .search-bar i.fa-times {
+        transition: all 0.2s ease;
+    }
+
+    .search-bar i.fa-times:hover {
+        color: #666;
+        transform: translateY(-50%) scale(1.1);
+    }
+`;
+document.head.appendChild(style);
     </script>
 </body>
 

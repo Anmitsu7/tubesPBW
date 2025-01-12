@@ -475,115 +475,270 @@
                 day: 'numeric'
             });
         }
-
         function viewRentalDetails(rentalId) {
-            const url = `/admin/rentals/${rentalId}`;
-            console.log('Requesting URL:', url);
+    // Get data from table row
+    const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+    if (!row) {
+        console.error('Row not found for rental ID:', rentalId);
+        return;
+    }
 
-            fetch(url)
-                .then(async response => {
-                    if (!response.ok) {
-                        const text = await response.text(); // Get error details
-                        console.log('Response status:', response.status);
-                        console.log('Response text:', text);
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Success data:', data);
-                    const modal = document.createElement('div');
-                    modal.className = 'modal-overlay';
-                    modal.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: rgba(0, 0, 0, 0.5);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        z-index: 1000;
-                    `;
+    const filmTitle = row.cells[0].textContent;
+    const rentedBy = row.cells[1].textContent;
+    const rentalDate = row.cells[2].textContent;
+    const dueDate = row.cells[3].textContent;
+    const status = row.cells[4].querySelector('span').textContent;
 
-                    const content = document.createElement('div');
-                    content.className = 'modal-content';
-                    content.style.cssText = `
-                        background: white;
-                        padding: 2rem;
-                        border-radius: 8px;
-                        width: 90%;
-                        max-width: 500px;
-                        position: relative;
-                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                    `;
+    // Create modal with enhanced styling
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease-out;
+    `;
 
-                    const rental = data.rental;
-                    content.innerHTML = `
-                        <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">Detail Penyewaan</h2>
-                        
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Informasi Film</h3>
-                            <p><strong>Judul:</strong> ${rental.film.judul}</p>
-                            <p><strong>Genre:</strong> ${rental.film.genre.nama}</p>
-                        </div>
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    content.style.cssText = `
+        background: linear-gradient(145deg, #ffffff, #f5f7fa);
+        padding: 2.5rem;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    `;
 
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Informasi Penyewaan</h3>
-                            <p><strong>Peminjam:</strong> ${rental.pengguna.username}</p>
-                            <p><strong>Tanggal Sewa:</strong> ${formatDate(rental.tanggalSewa)}</p>
-                            <p><strong>Tanggal Kembali:</strong> ${formatDate(rental.tanggalKembali)}</p>
-                            <p><strong>Status:</strong> 
-                                <span class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
-                                    style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem;">
-                                    ${rental.isOverdue ? 'Overdue' : 'Active'}
-                                </span>
-                            </p>
-                            ${rental.isOverdue ?
-                            `<p><strong>Hari Terlambat:</strong> ${data.daysOverdue} hari</p>` :
-                            ''}
-                        </div>
+    content.innerHTML = `
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideIn {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            .detail-item {
+                padding: 12px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                background: rgba(255, 255, 255, 0.9);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }
+            .detail-item:hover {
+                transform: translateX(5px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            .detail-label {
+                color: #64748b;
+                font-size: 0.875rem;
+                font-weight: 500;
+                margin-bottom: 4px;
+            }
+            .detail-value {
+                color: #1e293b;
+                font-size: 1.125rem;
+                font-weight: 600;
+            }
+            .close-btn {
+                background: #2c3e50;
+                color: white;
+                border: none;
+                padding: 10px 24px;
+                border-radius: 8px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 0.9rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+            .close-btn:hover {
+                background: #34495e;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+        </style>
+        
+        <h2 style="
+            margin-bottom: 2rem; 
+            color: #1e293b; 
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        ">
+            🎬 Detail Penyewaan
+        </h2>
+        
+        <div class="detail-item">
+            <div class="detail-label">Film Title</div>
+            <div class="detail-value">📽️ ${filmTitle}</div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-label">Rented By</div>
+            <div class="detail-value">👤 ${rentedBy}</div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-label">Rental Date</div>
+            <div class="detail-value">📅 ${rentalDate}</div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-label">Due Date</div>
+            <div class="detail-value">⏰ ${dueDate}</div>
+        </div>
+        
+        <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">
+                <span style="
+                    padding: 6px 16px;
+                    border-radius: 20px;
+                    font-size: 0.925rem;
+                    background: ${status.toLowerCase() === 'overdue' ? '#fee2e2' : '#dcfce7'};
+                    color: ${status.toLowerCase() === 'overdue' ? '#ef4444' : '#22c55e'};
+                    display: inline-block;
+                ">
+                    ${status.toLowerCase() === 'overdue' ? '⚠️' : '✅'} ${status}
+                </span>
+            </div>
+        </div>
 
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--primary-color); margin-bottom: 0.5rem;">Rincian Biaya</h3>
-                            <p><strong>Biaya Sewa:</strong> ${formatCurrency(data.basePrice)}</p>
-                            ${data.lateFee > 0 ?
-                            `<p><strong>Denda Keterlambatan:</strong> ${formatCurrency(data.lateFee)}</p>` :
-                            ''}
-                            <p style="margin-top: 0.5rem; font-size: 1.1em;">
-                                <strong>Total:</strong> 
-                                <span style="color: ${data.lateFee > 0 ? 'var(--danger-color)' : 'var(--success-color)'}">
-                                    ${formatCurrency(data.totalPrice)}
-                                </span>
-                            </p>
-                        </div>
+        <div style="
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        ">
+            <button onclick="closeModal(this)" class="close-btn">
+                Close
+            </button>
+        </div>
+    `;
 
-                        <button onclick="closeModal(this)" style="
-                            background: var(--primary-color);
-                            color: white;
-                            border: none;
-                            padding: 0.5rem 1rem;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-size: 1rem;
-                            transition: opacity 0.2s;
-                        ">Tutup</button>
-                    `;
+    modal.appendChild(content);
+    document.body.appendChild(modal);
 
-                    modal.appendChild(content);
-                    document.body.appendChild(modal);
-
-                    // Close when clicking outside
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) closeModal(modal);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error details:', error);
-                    showNotification('Error loading rental details', 'error');
-                });
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
         }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+        }
+    });
+}
+// Helper function to close modal
+function closeModal(button) {
+    const modal = button.closest('.modal-overlay');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Fungsi untuk membuat konten modal
+function createModalContent(rental) {
+    return `
+        <h2 style="margin-bottom: 1.5rem; color: var(--primary-color); font-size: 1.25rem;">
+            Detail Penyewaan
+        </h2>
+        
+        <div style="margin-bottom: 1rem;">
+            <p><strong>Film Title:</strong> ${rental.film?.judul || 'N/A'}</p>
+            <p><strong>Rented By:</strong> ${rental.pengguna?.username || 'N/A'}</p>
+            <p><strong>Rental Date:</strong> ${formatDate(rental.tanggalSewa) || 'N/A'}</p>
+            <p><strong>Due Date:</strong> ${formatDate(rental.tanggalKembali) || 'N/A'}</p>
+            <p>
+                <strong>Status:</strong> 
+                <span class="${rental.isOverdue ? 'status-overdue' : 'status-active'}"
+                    style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem;">
+                    ${rental.isOverdue ? 'Overdue' : 'Active'}
+                </span>
+            </p>
+        </div>
+
+        <div style="text-align: right; margin-top: 1rem;">
+            <button onclick="closeModal(this)" style="
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 0.5rem 1rem;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.875rem;
+            ">Close</button>
+        </div>
+    `;
+}
+
+// Fungsi untuk menampilkan modal
+function showModal(content) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+    `;
+
+    modalContent.innerHTML = content;
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+        }
+    });
+}
 
         function closeModal(element) {
             const modal = element.closest('.modal-overlay');

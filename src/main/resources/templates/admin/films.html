@@ -363,6 +363,122 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Add this after your existing script tags
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-bar input');
+    
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('table tbody tr');
+        
+        rows.forEach(row => {
+            const judul = row.children[1].textContent.toLowerCase(); // Judul column
+            const genre = row.children[2].textContent.toLowerCase(); // Genre column
+            const tahun = row.children[3].textContent.toLowerCase(); // Tahun column
+            const aktor = row.children[5].textContent.toLowerCase(); // Aktor column
+            
+            const matchesSearch = judul.includes(searchTerm) || 
+                                genre.includes(searchTerm) || 
+                                tahun.includes(searchTerm) || 
+                                aktor.includes(searchTerm);
+            
+            // Enhanced visibility transition
+            if (matchesSearch) {
+                row.style.display = '';
+                row.style.animation = 'fadeIn 0.5s ease-in';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update empty state message
+        updateEmptyState(rows);
+    });
+    
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .empty-search-message {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 1.1rem;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .search-highlight {
+            background-color: rgba(52, 152, 219, 0.2);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+// Function to update empty state message
+function updateEmptyState(rows) {
+    const tableBody = document.querySelector('table tbody');
+    const existingMessage = document.querySelector('.empty-search-message');
+    let visibleRows = 0;
+    
+    // Count visible rows
+    rows.forEach(row => {
+        if (row.style.display !== 'none') {
+            visibleRows++;
+        }
+    });
+    
+    // Show/hide empty state message
+    if (visibleRows === 0) {
+        if (!existingMessage) {
+            const message = document.createElement('tr');
+            message.className = 'empty-search-message';
+            message.innerHTML = `
+                <td colspan="7">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <i class="fas fa-search" style="font-size: 2rem; color: #94a3b8;"></i>
+                        <div>
+                            Tidak ada film yang sesuai dengan pencarian Anda
+                        </div>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(message);
+        }
+    } else if (existingMessage) {
+        existingMessage.remove();
+    }
+}
+
+// Optional: Enhanced search with debounce
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Apply debounce to search
+const searchInput = document.querySelector('.search-bar input');
+if (searchInput) {
+    const debouncedSearch = debounce(function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        // ... rest of your search logic
+    }, 300); // 300ms delay
+
+    searchInput.addEventListener('input', debouncedSearch);
+}
     </script>
 </body>
 

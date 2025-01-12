@@ -160,6 +160,117 @@
                }
            });
        });
+
+       // Tambahkan script ini setelah script yang sudah ada
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-bar input');
+    
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const tableBody = document.querySelector('table tbody');
+        const rows = tableBody.querySelectorAll('tr');
+        let hasVisibleRows = false;
+
+        rows.forEach(row => {
+            const id = row.children[0].textContent.toLowerCase();
+            const genreName = row.children[1].textContent.toLowerCase();
+            
+            if (id.includes(searchTerm) || genreName.includes(searchTerm)) {
+                row.style.display = '';
+                hasVisibleRows = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Tampilkan pesan jika tidak ada hasil
+        let noResultsMessage = tableBody.querySelector('.no-results-message');
+        
+        if (!hasVisibleRows) {
+            if (!noResultsMessage) {
+                const messageTr = document.createElement('tr');
+                messageTr.className = 'no-results-message';
+                messageTr.innerHTML = `
+                    <td colspan="3" style="text-align: center; padding: 20px;">
+                        <div style="color: #666; font-size: 15px;">
+                            <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px; color: #999;"></i>
+                            <p>Tidak ditemukan genre yang sesuai dengan pencarian</p>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(messageTr);
+            }
+        } else if (noResultsMessage) {
+            noResultsMessage.remove();
+        }
+    });
+
+    // Tambahkan clear button di search bar
+    const searchBar = document.querySelector('.search-bar');
+    const clearButton = document.createElement('i');
+    clearButton.className = 'fas fa-times';
+    clearButton.style.cssText = `
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+        display: none;
+    `;
+    searchBar.style.position = 'relative';
+    searchBar.appendChild(clearButton);
+
+    // Event listener untuk clear button
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        this.style.display = 'none';
+    });
+
+    // Tampilkan/sembunyikan clear button
+    searchInput.addEventListener('input', function() {
+        clearButton.style.display = this.value ? 'block' : 'none';
+    });
+
+    // Event listener untuk memfokuskan search input
+    document.querySelector('.search-bar i.fa-search').addEventListener('click', function() {
+        searchInput.focus();
+    });
+});
+
+// Add styles
+const style = document.createElement('style');
+style.textContent = `
+    .search-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-bar input {
+        padding-right: 30px;
+    }
+
+    .search-bar i.fa-times:hover {
+        color: #666;
+    }
+
+    .no-results-message td {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .no-results-message i {
+        display: block;
+        margin: 0 auto;
+    }
+
+    table tbody tr {
+        transition: all 0.3s ease;
+    }
+`;
+document.head.appendChild(style);
    </script>
 </body>
 </html>
