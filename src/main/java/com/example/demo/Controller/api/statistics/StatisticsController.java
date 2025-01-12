@@ -95,8 +95,8 @@ public class StatisticsController {
                     """
                             SELECT
                                 f.judul,
-                                COUNT(p.id) as totalRentals,
-                                f.stok as currentStock
+                                COALESCE(COUNT(p.id), 0) as totalRentals,
+                                COALESCE(f.stok, 0) as currentStock
                             FROM film f
                             LEFT JOIN penyewaan p ON p.film_id = f.id
                             GROUP BY f.id, f.judul, f.stok
@@ -110,12 +110,12 @@ public class StatisticsController {
                     """
                             SELECT
                                 f.judul,
-                                f.stok as availableStock,
-                                (f.stok + COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END)) as totalStock
+                                COALESCE(f.stok, 0) as availableStock,
+                                COALESCE(f.stok, 0) + COALESCE(COUNT(CASE WHEN p.status = 'DISEWA' THEN 1 END), 0) as totalStock
                             FROM film f
                             LEFT JOIN penyewaan p ON p.film_id = f.id AND p.status = 'DISEWA'
                             GROUP BY f.id, f.judul, f.stok
-                            HAVING f.stok < 3
+                            HAVING COALESCE(f.stok, 0) < 3
                             ORDER BY f.stok ASC
                             """);
             statistics.put("stockAlerts", stockAlerts);

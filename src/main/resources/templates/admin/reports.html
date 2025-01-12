@@ -393,24 +393,141 @@
         }
 
         function downloadMonthlyReport() {
-    // Get the main content element
-    const content = document.querySelector('.main-content');
-    
-    // Get current date for filename
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const filename = `ReelRental_Report_${year}_${month}.pdf`;
+    const reportContent = `
+        <div style="padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0; font-size: 14px;">REEL RENTAL</h1>
+                <h2 style="margin: 3px 0; font-size: 12px;">LAPORAN BULANAN PENYEWAAN FILM</h2>
+                <p style="margin: 3px 0; font-size: 11px;">Periode: ${moment().format('MMMM YYYY')}</p>
+            </div>
+
+            <!-- Form Section -->
+            <div style="margin-bottom: 15px; font-size: 11px;">
+                <table style="width: 100%; border-spacing: 0 4px;">
+                    <tr>
+                        <td style="width: 100px;">Tanggal Laporan</td>
+                        <td style="width: 10px;">:</td>
+                        <td>${moment().format('DD MMMM YYYY')}</td>
+                    </tr>
+                    <tr>
+                        <td>Dibuat Oleh</td>
+                        <td>:</td>
+                        <td>________________________</td>
+                    </tr>
+                    <tr>
+                        <td>Disetujui Oleh</td>
+                        <td>:</td>
+                        <td>________________________</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Statistics Summary -->
+            <div style="margin-bottom: 15px;">
+                <h3 style="font-size: 11px; border-bottom: 1px solid #000; padding-bottom: 3px; margin: 0 0 8px 0;">RINGKASAN STATISTIK</h3>
+                <table style="width: 100%; border-spacing: 0 4px; font-size: 11px;">
+                    <tr>
+                        <td style="width: 100px;">Total Penyewaan</td>
+                        <td style="width: 10px;">:</td>
+                        <td>${document.getElementById('totalRentals').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Rata-rata Durasi</td>
+                        <td>:</td>
+                        <td>${document.getElementById('avgDuration').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Tingkat Pengembalian</td>
+                        <td>:</td>
+                        <td>${document.getElementById('returnRate').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Genre Terpopuler</td>
+                        <td>:</td>
+                        <td>${document.getElementById('popularGenre').textContent}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Top Films -->
+            <div style="margin-bottom: 15px;">
+                <h3 style="font-size: 11px; border-bottom: 1px solid #000; padding-bottom: 3px; margin: 0 0 8px 0;">FILM TERPOPULER</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: left;">Judul Film</th>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: center;">Total Penyewaan</th>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: center;">Stok Tersedia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Array.from(document.getElementById('topFilmsTable').rows).slice(0, 5).map(row => `
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 4px;">${row.cells[0].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 4px; text-align: center;">${row.cells[1].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 4px; text-align: center;">${row.cells[2].textContent}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Stock Alerts -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="font-size: 11px; border-bottom: 1px solid #000; padding-bottom: 3px; margin: 0 0 8px 0;">PERINGATAN STOK</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: left;">Judul Film</th>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: center;">Stok Tersedia</th>
+                            <th style="border: 1px solid #000; padding: 4px; text-align: center;">Total Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Array.from(document.getElementById('stockAlertsTable').rows).slice(0, 5).map(row => `
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 4px;">${row.cells[0].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 4px; text-align: center;">${row.cells[1].textContent}</td>
+                                <td style="border: 1px solid #000; padding: 4px; text-align: center;">${row.cells[2].textContent}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Signatures -->
+            <div style="margin-top: 20px; font-size: 11px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 50%; text-align: center;">
+                            <p style="margin-bottom: 40px;">Dibuat oleh,</p>
+                            <p style="margin: 0;">(_____________________)</p>
+                            <p style="margin: 2px 0;">Admin</p>
+                        </td>
+                        <td style="width: 50%; text-align: center;">
+                            <p style="margin-bottom: 40px;">Disetujui oleh,</p>
+                            <p style="margin: 0;">(_____________________)</p>
+                            <p style="margin: 2px 0;">Manager</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+    // Create a temporary container
+    const container = document.createElement('div');
+    container.innerHTML = reportContent;
     
     // Configure html2pdf options
     const opt = {
-        margin: 1,
-        filename: filename,
+        margin: [0.2, 0.5, 0.2, 0.5], // [top, right, bottom, left]
+        filename: `Laporan_ReelRental_${moment().format('YYYY_MM')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2,
             useCORS: true,
-            logging: true,
             letterRendering: true
         },
         jsPDF: { 
@@ -420,26 +537,13 @@
         }
     };
 
-    // Temporarily modify content for better PDF output
-    const originalStyle = content.style.cssText;
-    content.style.margin = '0';
-    content.style.padding = '20px';
-    content.style.background = 'white';
-
     // Generate PDF
-    html2pdf().set(opt).from(content).save()
-        .then(() => {
-            // Restore original styling
-            content.style.cssText = originalStyle;
-        })
+    html2pdf().set(opt).from(container).save()
         .catch(error => {
             console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF report');
-            // Restore original styling
-            content.style.cssText = originalStyle;
+            alert('Gagal menghasilkan laporan PDF');
         });
 }
-
     </script>
 </body>
 

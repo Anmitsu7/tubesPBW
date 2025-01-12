@@ -81,13 +81,13 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
     // Monthly rental statistics
     @Query(value = """
             SELECT
-                DATE_PART('month', tanggal_sewa) as month,
+                EXTRACT(MONTH FROM tanggal_sewa) as month,
                 COUNT(*) as total,
                 COUNT(DISTINCT film_id) as unique_films,
                 COUNT(DISTINCT pengguna_id) as unique_customers
             FROM penyewaan
-            WHERE (:year IS NULL OR DATE_PART('year', tanggal_sewa) = :year)
-            GROUP BY DATE_PART('month', tanggal_sewa)
+            WHERE (:year IS NULL OR EXTRACT(YEAR FROM tanggal_sewa) = :year)
+            GROUP BY EXTRACT(MONTH FROM tanggal_sewa)
             ORDER BY month
             """, nativeQuery = true)
     List<Map<String, Object>> getMonthlyRentals(@Param("year") Integer year);
@@ -113,12 +113,12 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
                 f.judul as judul,
                 COUNT(*) as total,
                 g.nama as genre,
-                AVG(DATE_PART('day', p.tanggal_kembali - p.tanggal_sewa)) as avg_duration
+                AVG(EXTRACT(DAY FROM (p.tanggal_kembali - p.tanggal_sewa))) as avg_duration
             FROM penyewaan p
             JOIN film f ON p.film_id = f.id
             JOIN genre g ON f.genre_id = g.id
-            WHERE (:year IS NULL OR DATE_PART('year', p.tanggal_sewa) = :year)
-            AND (:month IS NULL OR DATE_PART('month', p.tanggal_sewa) = :month)
+            WHERE (:year IS NULL OR EXTRACT(YEAR FROM p.tanggal_sewa) = :year)
+            AND (:month IS NULL OR EXTRACT(MONTH FROM p.tanggal_sewa) = :month)
             GROUP BY f.id, f.judul, g.nama
             ORDER BY COUNT(*) DESC
             LIMIT :limit
@@ -126,7 +126,7 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
     List<Map<String, Object>> getPopularMovies(
             @Param("year") Integer year,
             @Param("month") Integer month,
-            @Param("limit") int limit);
+            @Param("limit") PageRequest limit);
 
     // Rental summary
     @Query(value = """
@@ -135,10 +135,10 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
                 COUNT(DISTINCT pengguna_id) as total_customers,
                 COUNT(CASE WHEN status = 'DISEWA' THEN 1 END) as active_rentals,
                 COUNT(CASE WHEN status = 'DIKEMBALIKAN' THEN 1 END) as completed_rentals,
-                AVG(DATE_PART('day', tanggal_kembali - tanggal_sewa)) as avg_rental_duration
+                AVG(EXTRACT(DAY FROM (tanggal_kembali - tanggal_sewa))) as avg_rental_duration
             FROM penyewaan
-            WHERE (:year IS NULL OR DATE_PART('year', tanggal_sewa) = :year)
-            AND (:month IS NULL OR DATE_PART('month', tanggal_sewa) = :month)
+            WHERE (:year IS NULL OR EXTRACT(YEAR FROM tanggal_sewa) = :year)
+            AND (:month IS NULL OR EXTRACT(MONTH FROM tanggal_sewa) = :month)
             """, nativeQuery = true)
     Map<String, Object> getRentalSummary(
             @Param("year") Integer year,
@@ -195,7 +195,7 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
                 u.username,
                 COUNT(*) as total_rentals,
                 COUNT(DISTINCT f.genre_id) as genres_rented,
-                AVG(DATE_PART('day', p.tanggal_kembali - p.tanggal_sewa)) as avg_rental_duration,
+                AVG(EXTRACT(DAY FROM (p.tanggal_kembali - p.tanggal_sewa))) as avg_rental_duration,
                 MAX(p.tanggal_sewa) as last_rental_date
             FROM penyewaan p
             JOIN pengguna u ON p.pengguna_id = u.id
@@ -225,7 +225,13 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
     @Query("SELECT p.film FROM Penyewaan p GROUP BY p.film ORDER BY COUNT(p) DESC")
     List<Film> findMostRentedFilms(Pageable pageable);
 
-    @Query("SELECT YEAR(p.tanggalSewa) as year, COUNT(p) as count FROM Penyewaan p GROUP BY YEAR(p.tanggalSewa)")
+    @Query(value = """
+        SELECT date_part('year', tanggal_sewa::timestamp) as year, 
+               COUNT(id) as count 
+        FROM penyewaan 
+        GROUP BY date_part('year', tanggal_sewa::timestamp)
+        ORDER BY year DESC
+        """, nativeQuery = true)
     List<Object[]> countRentalsByYear();
 
     @Query(value = """
