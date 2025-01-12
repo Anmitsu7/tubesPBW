@@ -234,4 +234,37 @@ public interface PenyewaanRepository extends JpaRepository<Penyewaan, Long> {
         """, nativeQuery = true)
     List<Object[]> countRentalsByYear();
 
+    @Query(value = """
+            SELECT
+                f.judul as judul,
+                CAST(COUNT(p.id) AS INTEGER) as totalRentals,
+                CAST(f.stok AS INTEGER) as currentStock,
+                CAST((
+                    SELECT COUNT(*)
+                    FROM penyewaan p2
+                    WHERE p2.film_id = f.id AND p2.status = 'DISEWA'
+                ) AS INTEGER) as rentedCount
+            FROM film f
+            LEFT JOIN penyewaan p ON f.id = p.film_id
+            GROUP BY f.id, f.judul, f.stok
+            ORDER BY COUNT(p.id) DESC
+            LIMIT 5
+            """, nativeQuery = true)
+    List<Map<String, Object>> getTopRentedFilmsWithStock();
+
+    @Query(value = """
+            SELECT
+                f.judul as judul,
+                CAST(f.stok AS INTEGER) as availableStock,
+                CAST((f.stok + (
+                    SELECT COUNT(*)
+                    FROM penyewaan p
+                    WHERE p.film_id = f.id AND p.status = 'DISEWA'
+                )) AS INTEGER) as totalStock
+            FROM film f
+            ORDER BY f.stok ASC
+            LIMIT 5
+            """, nativeQuery = true)
+    List<Map<String, Object>> getStockAlerts();
+
 }

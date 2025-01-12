@@ -79,6 +79,8 @@ public class AdminController {
         }
     }
 
+    
+
     // Films Management
     @GetMapping("/films")
     public String showFilmsPage(Model model) {
