@@ -272,3 +272,17 @@ ADD CONSTRAINT fk_penyewaan_film
     FOREIGN KEY (film_id) 
     REFERENCES film(id)
     ON DELETE CASCADE;
+
+    
+-- Insert Film Data Dummy
+INSERT INTO film (judul, deskripsi, tahun_rilis, genre_id, stok, cover_url) VALUES
+('The Godfather', 'The aging patriarch of an organized crime dynasty transfers control of his empire to his reluctant son.', 1972, 5, 7, 'the_godfather.jpg'),
+('The Dark Knight', 'Batman battles the Joker, a criminal mastermind terrorizing Gotham City.', 2008, 21, 10, 'the_dark_knight.jpg'),
+('Forrest Gump', 'The presidencies of Kennedy and Johnson, the Vietnam War, and other historical events unfold through the perspective of an Alabama man.', 1994, 7, 5, 'forrest_gump.jpg'),
+('Pulp Fiction', 'The lives of two mob hitmen, a boxer, and a pair of diner bandits intertwine in four tales of violence and redemption.', 1994, 7, 6, 'pulp_fiction.jpg'),
+('The Lord of the Rings: The Return of the King', 'The final battle for Middle-earth begins as Frodo and Sam approach Mount Doom to destroy the One Ring.', 2003, 9, 8, 'lotr_return_of_the_king.jpg'),
+('The Matrix', 'A computer hacker learns about the true nature of reality and his role in the war against its controllers.', 1999, 13, 10, 'the_matrix.jpg'),
+('Titanic', 'A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the ill-fated RMS Titanic.', 1997, 12, 4, 'titanic.jpg'),
+('Saving Private Ryan', 'A group of U.S. soldiers go behind enemy lines to retrieve a paratrooper whose brothers have been killed in action.', 1998, 15, 5, 'saving_private_ryan.jpg'),
+('Gladiator', 'A betrayed Roman general fights his way back as a gladiator to avenge his family.', 2000, 15, 6, 'gladiator.jpg'),
+('Avatar', 'A paraplegic Marine is sent to the moon Pandora on a unique mission but becomes torn between following orders and protecting his new home.', 2009, 13, 9, 'avatar.jpg');
